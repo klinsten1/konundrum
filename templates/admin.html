@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Admin — Konundrum{% endblock %}
+{% block body %}
+<div class="page">
+  <div class="flex-between" style="margin-bottom:1.5rem;">
+    <div class="page-title">// ADMIN — PIRAMIDE BEHEER</div>
+    <a href="{{ url_for('admin_add_stone') }}" class="btn btn-primary btn-sm">+ Nieuwe steen</a>
+  </div>
+
+  {% if stone_data %}
+    {% set rows = {} %}
+    {% for item in stone_data %}
+      {% set r = item.stone.row %}
+      {% if r not in rows %}{% set _ = rows.update({r:[]}) %}{% endif %}
+      {% set _ = rows[r].append(item) %}
+    {% endfor %}
+
+    {% for row_num in rows|sort(reverse=true) %}
+      <div style="margin-bottom:2rem;">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:.75rem;">
+          RIJ {{ row_num }}{% if row_num==0 %} — onderste rij (startpunt){% endif %}
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <table class="tbl">
+            <thead><tr>
+              <th>Naam</th><th>Label</th><th>Rij/Kol</th>
+              <th>Vereist</th><th>Sublevels</th><th>Acties</th>
+            </tr></thead>
+            <tbody>
+            {% for item in rows[row_num] %}
+              <tr>
+                <td><span style="font-family:var(--mono);color:var(--blue)">{{ item.stone.name }}</span></td>
+                <td><span class="badge badge-green">{{ item.stone.label }}</span></td>
+                <td style="font-family:var(--mono);font-size:12px;color:var(--text-dim)">{{ item.stone.row }}/{{ item.stone.col }}</td>
+                <td style="font-family:var(--mono);font-size:12px;color:var(--text-dim)">
+                  {{ item.stone.dependencies if item.stone.dependencies else '—' }}
+                </td>
+                <td>
+                  <span class="badge badge-blue">{{ item.challenges|length }}</span>
+                  {% for ch in item.challenges %}
+                    <span class="badge {% if ch.is_final %}badge-yellow{% else %}badge-dim{% endif %}" style="margin-left:2px;">
+                      {{ ch.slug }}{% if ch.is_final %} ★{% endif %}
+                    </span>
+                  {% endfor %}
+                </td>
+                <td>
+                  <div class="act">
+                    <a href="{{ url_for('admin_stone_challenges', stone_id=item.stone.id) }}" class="btn btn-secondary btn-sm">Sublevels</a>
+                    <a href="{{ url_for('admin_edit_stone', stone_id=item.stone.id) }}" class="btn btn-secondary btn-sm">Bewerk</a>
+                    <form method="POST" action="{{ url_for('admin_delete_stone', stone_id=item.stone.id) }}"
+                          onsubmit="return confirm('Steen + alle sublevels verwijderen?');" style="margin:0">
+                      <button type="submit" class="btn btn-danger btn-sm">✕</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endfor %}
+
+    <div class="card" style="margin-top:1rem;font-family:var(--mono);font-size:12px;color:var(--dim);line-height:1.8;">
+      <strong style="color:var(--text-dim)">★</strong> = Finaal sublevel (name + city)<br>
+      Nieuwe steen toevoegen → piramide groeit automatisch op basis van rij/kolom.
+    </div>
+  {% else %}
+    <div class="card" style="text-align:center;padding:3rem;color:var(--text-dim);font-family:var(--mono);">
+      Nog geen stenen. <a href="{{ url_for('admin_add_stone') }}">Voeg de eerste toe.</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

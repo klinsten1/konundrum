@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Registreren — Konundrum{% endblock %}
+{% block body %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;">
+  <div style="width:100%;max-width:380px;">
+    <div style="text-align:center;margin-bottom:2rem;">
+      <div style="font-family:var(--mono);font-size:30px;letter-spacing:4px;">
+        <span style="color:var(--green)">K</span><span style="color:var(--blue)">onundrum</span>
+      </div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:2px;margin-top:4px;">// nieuw account</div>
+    </div>
+    <div class="card">
+      {% if error %}<div class="error-box">{{ error }}</div>{% endif %}
+      <form method="POST">
+        <div class="field"><label>Kies een username</label>
+          <input type="text" name="username" placeholder="agent_42" autocomplete="username" required autofocus/>
+        </div>
+        <div class="field"><label>Kies een wachtwoord</label>
+          <input type="password" name="password" placeholder="min. 4 tekens" autocomplete="new-password" required/>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.25rem;">Account aanmaken</button>
+      </form>
+      <div style="text-align:center;margin-top:1.25rem;font-size:13px;color:var(--text-dim);">
+        Al een account? <a href="{{ url_for('login') }}">Log in</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

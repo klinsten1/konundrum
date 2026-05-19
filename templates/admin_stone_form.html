@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{% if stone %}Steen bewerken{% else %}Nieuwe steen{% endif %} — Konundrum{% endblock %}
+{% block body %}
+<div class="page-sm">
+  <div class="bc">
+    <a href="{{ url_for('admin') }}">Admin</a> &nbsp;/&nbsp;
+    <span>{% if stone %}Bewerken{% else %}Nieuwe steen{% endif %}</span>
+  </div>
+  <div class="page-title">// {% if stone %}STEEN BEWERKEN{% else %}NIEUWE STEEN{% endif %}</div>
+
+  {% if error %}<div class="error-box">{{ error }}</div>{% endif %}
+
+  <div class="card">
+    <form method="POST">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="field">
+          <label>Naam (unieke ID) *</label>
+          <input type="text" name="name" value="{{ stone.name if stone else '' }}" placeholder="S11" required/>
+          <div class="sub">Bijv. S11, BONUS1 — alleen letters/cijfers</div>
+        </div>
+        <div class="field">
+          <label>Label (op blok) *</label>
+          <input type="text" name="label" value="{{ stone.label if stone else '' }}" placeholder="CAESAR" required/>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="field">
+          <label>Rij *</label>
+          <input type="number" name="row" value="{{ stone.row if stone else 0 }}" min="0" required/>
+          <div class="sub">0 = onderste rij. Piramide groeit automatisch.</div>
+        </div>
+        <div class="field">
+          <label>Kolom *</label>
+          <input type="number" name="col" value="{{ stone.col if stone else 0 }}" min="0" required/>
+          <div class="sub">Positie binnen de rij (0, 1, 2...)</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Afhankelijkheden</label>
+        <input type="text" name="dependencies"
+               value="{{ stone.dependencies if stone else '' }}"
+               placeholder="S1,S2"/>
+        <div class="sub">
+          Komma-gescheiden namen. Laat leeg = altijd beschikbaar.
+          {% if all_stones %}
+            Klik om toe te voegen:
+            {% for s in all_stones %}
+              <span style="color:var(--blue);cursor:pointer;text-decoration:underline;"
+                    onclick="addDep('{{ s.name }}')">{{ s.name }}</span>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+      <hr class="div"/>
+      <div style="display:flex;gap:.75rem;">
+        <button type="submit" class="btn btn-primary">{{ 'Opslaan' if stone else 'Steen aanmaken' }}</button>
+        <a href="{{ url_for('admin') }}" class="btn btn-secondary">Annuleren</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function addDep(name) {
+  const inp = document.querySelector('input[name="dependencies"]');
+  const deps = inp.value.trim() ? inp.value.trim().split(',').map(s=>s.trim()).filter(Boolean) : [];
+  if (!deps.includes(name)) { deps.push(name); inp.value = deps.join(','); }
+}
+</script>
+{% endblock %}

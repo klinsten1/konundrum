@@ -1,0 +1,45 @@
+<!--
+  Konundrum challenge: s2_c1
+  =====================================================
+  Bewerk dit bestand vrij. Je kunt hier zetten:
+    - Tekst / HTML
+    - Een afbeelding: <img src="/static/images/mijn-foto.jpg" ...>
+    - Inline JavaScript (zie voorbeeld hieronder)
+
+  De antwoordboxen worden automatisch onder deze inhoud geplaatst.
+  Zet hier NOOIT antwoorden — die staan veilig in de database.
+  =====================================================
+-->
+
+<p>Schrijf hier jouw vraag of omschrijving...</p>
+
+<!--
+VOORBEELD MET AFBEELDING:
+<figure>
+  <img src="/static/images/aanwijzing.jpg"
+       alt="aanwijzing"
+       style="max-width:100%;border-radius:6px;margin:1rem 0;">
+  <figcaption style="font-size:12px;color:var(--text-dim);">
+    Afbeelding: omschrijving
+  </figcaption>
+</figure>
+
+VOORBEELD MET JAVASCRIPT-ANIMATIE:
+<canvas id="cvs-s2_c1" width="420" height="140"
+  style="background:#050810;border:1px solid var(--border);
+         border-radius:4px;display:block;margin:1rem 0;max-width:100%;">
+</canvas>
+<script>
+(function() {
+  const c = document.getElementById('cvs-s2_c1');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#00ff88';
+  ctx.font = 'bold 18px monospace';
+  ctx.fillText('Jouw aanwijzing hier...', 20, 50);
+  ctx.fillStyle = '#00b4ff';
+  ctx.font = '14px monospace';
+  ctx.fillText('Voeg meer aanwijzingen toe...', 20, 90);
+})();
+</script>
+-->

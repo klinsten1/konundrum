@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}{% if challenge %}Sublevel bewerken{% else %}Nieuw sublevel{% endif %} — Konundrum{% endblock %}
+
+{% block body %}
+<div class="page-sm">
+  <div class="bc">
+    <a href="{{ url_for('admin') }}">Admin</a> &nbsp;/&nbsp;
+    <a href="{{ url_for('admin_stone_challenges', stone_id=stone.id) }}">{{ stone.name }} · {{ stone.label }}</a>
+    &nbsp;/&nbsp;
+    <span>{% if challenge %}Bewerken{% else %}Nieuw sublevel{% endif %}</span>
+  </div>
+  <div class="page-title">// {% if challenge %}SUBLEVEL BEWERKEN{% else %}NIEUW SUBLEVEL{% endif %}</div>
+
+  {% if error %}<div class="error-box">{{ error }}</div>{% endif %}
+
+  <div class="card">
+    <form method="POST" id="chform">
+
+      <div class="field">
+        <label>Slug (bestandsnaam) *</label>
+        <input type="text" name="slug" id="slug-inp"
+               value="{{ challenge.slug if challenge else '' }}"
+               placeholder="s1_c1" required
+               pattern="[a-zA-Z0-9_-]+"
+               oninput="updatePreview()"/>
+        <div class="sub">
+          Maakt het bestand <code id="slug-preview">challenges/{{ challenge.slug if challenge else '…' }}.html</code><br>
+          Alleen letters, cijfers, _ en - toegestaan.
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Type sublevel</label>
+        <div style="display:flex;gap:1rem;margin-top:.25rem;">
+          <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:14px;text-transform:none;letter-spacing:0;">
+            <input type="radio" name="is_final" value="" id="type-single"
+                   {% if not challenge or not challenge.is_final %}checked{% endif %}
+                   onchange="toggleType(false)"/>
+            <span>
+              <span class="badge badge-dim">SINGLE</span>
+              — één antwoordveld
+            </span>
+          </label>
+          <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:14px;text-transform:none;letter-spacing:0;">
+            <input type="radio" name="is_final" value="1" id="type-final"
+                   {% if challenge and challenge.is_final %}checked{% endif %}
+                   onchange="toggleType(true)"/>
+            <span>
+              <span class="badge badge-yellow">NAME + CITY ★</span>
+              — twee antwoordvelden
+            </span>
+          </label>
+        </div>
+        <div class="sub mt1">Aanbeveling: maak het laatste sublevel van een steen altijd NAME+CITY.</div>
+      </div>
+
+      <hr class="div"/>
+
+      <div id="section-single" {% if challenge and challenge.is_final %}style="display:none"{% endif %}>
+        <div class="field">
+          <label>Antwoord *</label>
+          <input type="text" name="answer_1"
+                 value="{{ challenge.answer_1 if challenge else '' }}"
+                 placeholder="Het correcte antwoord"/>
+          <div class="sub">Vergelijking is hoofdletterongevoelig.</div>
+        </div>
+        <div class="field">
+          <label>Hint (bij "bijna correct")</label>
+          <input type="text" name="hint_1"
+                 value="{{ challenge.hint_1 if challenge else '' }}"
+                 placeholder="Een aanwijzing richting het juiste antwoord..."/>
+        </div>
+      </div>
+
+      <div id="section-final" {% if not challenge or not challenge.is_final %}style="display:none"{% endif %}>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div>
+            <div class="field">
+              <label>Naam (antwoord) *</label>
+              <input type="text" name="answer_name"
+                     value="{{ challenge.answer_name if challenge else '' }}"
+                     placeholder="Voornaam Achternaam"/>
+            </div>
+            <div class="field">
+              <label>Hint bij naam</label>
+              <input type="text" name="hint_name"
+                     value="{{ challenge.hint_name if challenge else '' }}"
+                     placeholder="Aanwijzing voor de naam..."/>
+            </div>
+          </div>
+          <div>
+            <div class="field">
+              <label>Stad (antwoord) *</label>
+              <input type="text" name="answer_city"
+                     value="{{ challenge.answer_city if challenge else '' }}"
+                     placeholder="Stad"/>
+            </div>
+            <div class="field">
+              <label>Hint bij stad</label>
+              <input type="text" name="hint_city"
+                     value="{{ challenge.hint_city if challenge else '' }}"
+                     placeholder="Aanwijzing voor de stad..."/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="div"/>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="field">
+          <label>Hint drempel (%)</label>
+          <input type="number" name="hint_threshold"
+                 value="{{ ((challenge.hint_threshold if challenge else 0.6)*100)|int }}"
+                 min="0" max="100"/>
+          <div class="sub">
+            Bij welk % gelijkenis wordt "bijna!" getoond?<br>
+            0 = nooit een bijna-hint. Standaard: 60%.
+          </div>
+        </div>
+        <div class="field">
+          <label>Volgorde</label>
+          <input type="number" name="order"
+                 value="{{ challenge.ord if challenge else next_order }}"
+                 min="0"/>
+          <div class="sub">Lagere nummers komen eerst (start bij 0).</div>
+        </div>
+      </div>
+
+      <hr class="div"/>
+
+      <div class="card" style="background:var(--bg);border-color:var(--border2);margin-bottom:1.25rem;">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">VRAAGBESTAND</div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--blue);" id="file-path-preview">
+          challenges/{{ challenge.slug if challenge else '…' }}.html
+        </div>
+        <div style="font-size:13px;color:var(--text-dim);margin-top:.5rem;line-height:1.6;">
+          Dit bestand wordt automatisch aangemaakt met een starttemplate.<br>
+          Bewerk het daarna vrij: voeg tekst, afbeeldingen of JavaScript toe.<br>
+          Antwoorden staan <strong style="color:var(--red)">nooit</strong> in dit bestand.
+        </div>
+      </div>
+
+      <div style="display:flex;gap:.75rem;">
+        <button type="submit" class="btn btn-primary" onclick="return prepareSubmit()">
+          {{ 'Opslaan' if challenge else 'Sublevel aanmaken' }}
+        </button>
+        <a href="{{ url_for('admin_stone_challenges', stone_id=stone.id) }}"
+           class="btn btn-secondary">Annuleren</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleType(isFinal) {
+  document.getElementById('section-single').style.display = isFinal ? 'none' : '';
+  document.getElementById('section-final').style.display  = isFinal ? ''     : 'none';
+}
+
+function updatePreview() {
+  const slug = document.getElementById('slug-inp').value || '…';
+  document.getElementById('slug-preview').textContent      = 'challenges/' + slug + '.html';
+  document.getElementById('file-path-preview').textContent = 'challenges/' + slug + '.html';
+}
+
+function prepareSubmit() {
+  // Convert hint_threshold from % to ratio
+  const inp = document.querySelector('input[name="hint_threshold"]');
+  inp.value = (parseFloat(inp.value) / 100).toFixed(2);
+  return true;
+}
+
+updatePreview();
+</script>
+{% endblock %}
