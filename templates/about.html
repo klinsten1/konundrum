@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}About — Konundrum{% endblock %}
+{% block body %}
+<div class="page" style="max-width:720px;">
+  <div class="page-title">// ABOUT</div>
+  <div class="card" style="line-height:1.8;font-size:15px;">
+    {% if content %}
+      {{ content }}
+    {% else %}
+      <p style="color:var(--text-dim);font-family:var(--mono);">
+        Nog geen inhoud. Log in als admin en ga naar Admin → About pagina.
+      </p>
+    {% endif %}
+  </div>
+  <div class="mt2">
+    <a href="{{ url_for('home') }}" class="btn btn-secondary btn-sm">← Home</a>
+  </div>
+</div>
+{% endblock %}

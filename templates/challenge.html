@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}{{ challenge.title or challenge.slug }} — {{ stone.label }} — Konundrum{% endblock %}
+{% block body %}
+<div class="page-sm">
+  <div class="bc">
+    <a href="{{ url_for('pyramid') }}">Piramide</a> &nbsp;/&nbsp;
+    <a href="{{ url_for('stone_view', stone_id=stone.id) }}">{{ stone.name }} · {{ stone.label }}</a>
+    &nbsp;/&nbsp;
+    <span>{{ challenge.title or challenge.slug }}</span>
+  </div>
+
+  <div class="flex-between" style="margin-bottom:1.25rem;">
+    <div>
+      <div style="font-family:var(--mono);font-size:18px;color:var(--blue);letter-spacing:1px;">
+        {{ challenge.title or challenge.slug }}
+      </div>
+      <div style="display:flex;gap:.75rem;margin-top:4px;font-size:12px;font-family:var(--mono);flex-wrap:wrap;">
+        {% if challenge.is_final %}
+          <span style="color:var(--yellow)">★ NAME + CITY</span>
+        {% else %}
+          <span style="color:var(--dim)">SINGLE</span>
+        {% endif %}
+        <span style="color:var(--blue)">+{{ challenge.points }} pts</span>
+        {% if attempts > 0 %}
+          <span style="color:var(--dim)">{{ attempts }} poging{% if attempts != 1 %}en{% endif %}</span>
+        {% endif %}
+      </div>
+    </div>
+    {% if is_solved %}
+      <span style="color:var(--green);font-family:var(--mono);font-size:13px;">✅ OPGELOST</span>
+    {% endif %}
+  </div>
+
+  {# Challenge inhoud uit challenges/<slug>.html #}
+  <div class="card" style="margin-bottom:1.25rem;border-color:var(--border2);">
+    <div class="ch-content">
+      {{ content }}
+    </div>
+  </div>
+
+  {# Antwoord sectie #}
+  <div class="card" id="answer-card">
+    {% if final_locked %}
+      <div style="font-family:var(--mono);font-size:13px;color:var(--yellow);text-align:center;padding:.5rem;">
+        🔒 Los eerst alle andere sublevels van deze steen op.
+      </div>
+
+    {% elif is_solved %}
+      <div class="solved-badge" style="text-align:center;padding:.5rem;">
+        ✅ Dit sublevel is opgelost!
+        <div style="font-size:12px;color:var(--text-dim);margin-top:.25rem;">
+          <a href="{{ url_for('stone_view', stone_id=stone.id) }}">Terug naar {{ stone.label }}</a>
+        </div>
+      </div>
+
+    {% elif challenge.is_final %}
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:1rem;">ANTWOORD</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" id="final-grid">
+        <div>
+          <div class="answer-label">Naam</div>
+          <input class="answer-input" id="inp-name" type="text"
+                 placeholder="Naam..." autocomplete="off"/>
+          <div class="field-fb" id="fb-name"></div>
+        </div>
+        <div>
+          <div class="answer-label">Stad</div>
+          <input class="answer-input" id="inp-city" type="text"
+                 placeholder="Stad..." autocomplete="off"/>
+          <div class="field-fb" id="fb-city"></div>
+        </div>
+      </div>
+      <div class="mt2" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <button class="check-btn" id="check-btn" onclick="checkFinal()">Controleer</button>
+        <div id="global-fb" style="font-family:var(--mono);font-size:13px;"></div>
+      </div>
+
+    {% else %}
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:.75rem;">ANTWOORD</div>
+      <div style="display:flex;gap:.5rem;">
+        <input class="answer-input" id="inp-1" type="text"
+               placeholder="Jouw antwoord..." autocomplete="off"/>
+        <button class="check-btn" id="check-btn" onclick="checkSingle()">Controleer</button>
+      </div>
+      <div class="field-fb mt1" id="fb-1"></div>
+    {% endif %}
+  </div>
+
+  {# Navigatie vorige/volgende #}
+  <div style="display:flex;justify-content:space-between;margin-top:1.25rem;gap:.5rem;">
+    <div>
+      {% if prev_ch %}
+        <a href="{{ url_for('challenge_view', slug=prev_ch.slug) }}"
+           class="btn btn-secondary btn-sm">← {{ prev_ch.title or prev_ch.slug }}</a>
+      {% else %}
+        <a href="{{ url_for('stone_view', stone_id=stone.id) }}"
+           class="btn btn-secondary btn-sm">← {{ stone.label }}</a>
+      {% endif %}
+    </div>
+    <div>
+      {% if next_ch %}
+        <a href="{{ url_for('challenge_view', slug=next_ch.slug) }}"
+           class="btn btn-secondary btn-sm">{{ next_ch.title or next_ch.slug }} →</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const CHALLENGE_ID = {{ challenge.id }};
+
+async function postCheck(payload) {
+  const res = await fetch('/api/check', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
+function applyField(inputEl, fbEl, result) {
+  inputEl.classList.remove('ok','hint','wrong');
+  fbEl.className = 'field-fb mt1';
+  if (!result) return;
+  const cls = result.status === 'correct' ? 'ok' : result.status;
+  inputEl.classList.add(cls);
+  fbEl.classList.add(result.status === 'correct' ? 'correct' : result.status);
+  fbEl.textContent = result.msg || '';
+}
+
+function showCorrect(points) {
+  document.getElementById('answer-card').innerHTML =
+    `<div class="solved-badge" style="text-align:center;padding:.5rem;">
+       ✅ Correct! <span style="color:var(--blue)">+${points} punten</span>
+       <div style="font-size:12px;color:var(--text-dim);margin-top:.25rem;">
+         <a href="{{ url_for('stone_view', stone_id=stone.id) }}">Terug naar {{ stone.label }}</a>
+       </div>
+     </div>`;
+}
+
+async function checkSingle() {
+  const inp = document.getElementById('inp-1');
+  const fb  = document.getElementById('fb-1');
+  const btn = document.getElementById('check-btn');
+  if (!inp.value.trim()) return;
+  btn.disabled = true;
+  try {
+    const data = await postCheck({challenge_id: CHALLENGE_ID, answer_1: inp.value.trim()});
+    if (data.result === 'correct') {
+      showCorrect(data.points);
+    } else {
+      applyField(inp, fb, data.fields && data.fields.answer_1);
+      btn.disabled = false;
+      inp.focus();
+    }
+  } catch(e) {
+    fb.textContent = 'Verbindingsfout.'; fb.className = 'field-fb wrong';
+    btn.disabled = false;
+  }
+}
+
+async function checkFinal() {
+  const inpName = document.getElementById('inp-name');
+  const inpCity = document.getElementById('inp-city');
+  const fbName  = document.getElementById('fb-name');
+  const fbCity  = document.getElementById('fb-city');
+  const btn     = document.getElementById('check-btn');
+  btn.disabled  = true;
+  try {
+    const data = await postCheck({
+      challenge_id: CHALLENGE_ID,
+      answer_name: inpName.value.trim(),
+      answer_city: inpCity.value.trim()
+    });
+    if (data.result === 'correct') {
+      showCorrect(data.points);
+    } else {
+      const f = data.fields || {};
+      applyField(inpName, fbName, f.answer_name);
+      applyField(inpCity, fbCity, f.answer_city);
+      btn.disabled = false;
+      if (f.answer_name && f.answer_name.status !== 'correct') inpName.focus();
+      else inpCity.focus();
+    }
+  } catch(e) {
+    fbName.textContent = 'Verbindingsfout.'; fbName.className = 'field-fb wrong';
+    btn.disabled = false;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const inp1 = document.getElementById('inp-1');
+  if (inp1) {
+    inp1.focus();
+    inp1.addEventListener('keydown', e => { if (e.key==='Enter') checkSingle(); });
+  }
+  const inpN = document.getElementById('inp-name');
+  const inpC = document.getElementById('inp-city');
+  if (inpN) {
+    inpN.focus();
+    inpN.addEventListener('keydown', e => { if (e.key==='Enter') inpC && inpC.focus(); });
+  }
+  if (inpC) {
+    inpC.addEventListener('keydown', e => { if (e.key==='Enter') checkFinal(); });
+  }
+});
+</script>
+{% endblock %}

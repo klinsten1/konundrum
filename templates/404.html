@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ code or 404 }} — Konundrum{% endblock %}
+{% block body %}
+<div style="min-height:80vh;display:flex;align-items:center;justify-content:center;padding:2rem;">
+  <div style="text-align:center;max-width:480px;">
+    <div style="font-family:var(--mono);font-size:80px;color:var(--border2);line-height:1;margin-bottom:1rem;">
+      {{ code or 404 }}
+    </div>
+    <div style="font-family:var(--mono);font-size:16px;color:var(--red);letter-spacing:2px;margin-bottom:1rem;">
+      {% if code == 403 %}ACCESS DENIED
+      {% elif code == 500 %}INTERNAL ERROR
+      {% elif code == 400 %}BAD REQUEST
+      {% else %}NOT FOUND{% endif %}
+    </div>
+    <div style="font-size:14px;color:var(--text-dim);margin-bottom:2rem;line-height:1.7;">
+      {{ msg or "De pagina die je zoekt bestaat niet of is verplaatst." }}
+    </div>
+    {% if session.user_id %}
+      <a href="{{ url_for('home') }}" class="btn btn-secondary">← Terug naar home</a>
+    {% else %}
+      <a href="{{ url_for('login') }}" class="btn btn-secondary">← Inloggen</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

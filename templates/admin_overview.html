@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Overzicht — Admin — Konundrum{% endblock %}
+{% block body %}
+<div class="page">
+  <div class="flex-between" style="margin-bottom:1.5rem;">
+    <div class="page-title">// ADMIN OVERZICHT</div>
+    <a href="{{ url_for('admin') }}" class="btn btn-secondary btn-sm">← Beheer</a>
+  </div>
+
+  {# ── Cijfers bovenaan ── #}
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;">
+    <div class="card" style="text-align:center;">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:.4rem;">SPELERS</div>
+      <div style="font-family:var(--mono);font-size:28px;color:var(--blue);">{{ stats.total_users }}</div>
+      <div style="font-size:11px;color:var(--dim);">{{ stats.confirmed }} e-mail bevestigd</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:.4rem;">STENEN / SUBLEVELS</div>
+      <div style="font-family:var(--mono);font-size:28px;color:var(--green);">
+        {{ stats.total_stones }}<span style="font-size:16px;color:var(--dim);"> / </span>{{ stats.total_ch }}
+      </div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:.4rem;">MAX PUNTEN</div>
+      <div style="font-family:var(--mono);font-size:28px;color:var(--yellow);">{{ stats.total_pts }}</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:.4rem;">POGINGEN / OPLOSSINGEN</div>
+      <div style="font-family:var(--mono);font-size:28px;color:var(--dim);">
+        {{ stats.total_attempts }}<span style="font-size:16px;"> / </span>{{ stats.total_solves }}
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+
+    {# ── Pogingen per sublevel ── #}
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:.75rem;">
+        Sublevels — pogingen (hint-indicatie)
+      </div>
+      {% if stats.ch_attempts %}
+        <div class="card" style="padding:0;overflow:hidden;">
+          <table class="tbl">
+            <thead><tr>
+              <th>Sublevel</th>
+              <th style="text-align:right;">Pogingen</th>
+              <th style="text-align:right;">Opgelost</th>
+              <th style="text-align:right;">Spelers</th>
+            </tr></thead>
+            <tbody>
+            {% for item in stats.ch_attempts %}
+              {% set ratio = (item.total_solves / item.total_attempts * 100)|int if item.total_attempts > 0 else 100 %}
+              <tr>
+                <td>
+                  <span style="font-family:var(--mono);font-size:12px;color:var(--text);">
+                    {{ item.title or item.slug }}
+                  </span>
+                  <div style="font-size:10px;color:var(--dim);font-family:var(--mono);">
+                    +{{ item.points }} pts
+                  </div>
+                </td>
+                <td style="text-align:right;font-family:var(--mono);
+                  color:{% if item.total_attempts > 20 %}var(--red){% elif item.total_attempts > 8 %}var(--yellow){% else %}var(--text-dim){% endif %};">
+                  {{ item.total_attempts }}
+                  {% if item.total_attempts > 8 %}
+                    <span style="font-size:10px;color:var(--yellow);" title="Veel pogingen — hint overwegen?">⚠</span>
+                  {% endif %}
+                </td>
+                <td style="text-align:right;font-family:var(--mono);color:var(--green);">
+                  {{ item.total_solves }}
+                </td>
+                <td style="text-align:right;font-family:var(--mono);color:var(--dim);">
+                  {{ item.unique_players }}
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:.5rem;">
+          ⚠ = veel pogingen → hint toevoegen of moeilijkheidsgraad bekijken
+        </div>
+      {% else %}
+        <div class="card" style="color:var(--text-dim);font-family:var(--mono);font-size:13px;text-align:center;padding:2rem;">
+          Nog geen pogingen geregistreerd.
+        </div>
+      {% endif %}
+    </div>
+
+    {# ── Recente activiteit ── #}
+    <div>
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:.75rem;">
+        Recente activiteit
+      </div>
+      {% if stats.recent %}
+        <div class="card" style="padding:0;overflow:hidden;max-height:420px;overflow-y:auto;">
+          {% for h in stats.recent %}
+            <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem 1rem;border-bottom:1px solid var(--border);">
+              <span style="font-size:15px;flex-shrink:0;">
+                {% if h.event_type == 'stone' %}🏆{% else %}✅{% endif %}
+              </span>
+              <div style="flex:1;min-width:0;">
+                <div style="font-family:var(--mono);font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                  <span style="color:var(--blue);">{{ h.username }}</span>
+                  — {{ h.label }}
+                </div>
+                <div style="font-size:10px;color:var(--dim);">{{ h.happened_at[5:16] }}</div>
+              </div>
+              {% if h.points > 0 %}
+                <span style="font-family:var(--mono);font-size:11px;color:var(--yellow);flex-shrink:0;">+{{ h.points }}</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card" style="color:var(--text-dim);font-family:var(--mono);font-size:13px;text-align:center;padding:2rem;">
+          Nog geen activiteit.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Spelersoverzicht ── #}
+  <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:.75rem;">
+    Spelers
+  </div>
+  {% if stats.users %}
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="tbl">
+        <thead><tr>
+          <th>Username</th>
+          <th>E-mail</th>
+          <th>Lid sinds</th>
+          <th style="text-align:right;">Punten</th>
+          <th style="text-align:right;">Sublevels</th>
+          <th style="text-align:right;">Stenen</th>
+          <th style="text-align:right;">Pogingen</th>
+        </tr></thead>
+        <tbody>
+        {% for u in stats.users %}
+          <tr>
+            <td style="font-family:var(--mono);color:var(--blue);">{{ u.username }}</td>
+            <td style="font-family:var(--mono);font-size:12px;color:var(--text-dim);">
+              {{ u.email }}
+              {% if u.email_confirmed %}
+                <span style="color:var(--green);font-size:10px;" title="Bevestigd">✓</span>
+              {% else %}
+                <span style="color:var(--yellow);font-size:10px;" title="Niet bevestigd">⏳</span>
+              {% endif %}
+            </td>
+            <td style="font-family:var(--mono);font-size:11px;color:var(--dim);">{{ u.created_at[:10] }}</td>
+            <td style="text-align:right;font-family:var(--mono);color:var(--yellow);font-weight:700;">{{ u.points }}</td>
+            <td style="text-align:right;font-family:var(--mono);color:var(--blue);">{{ u.solved_ch }}</td>
+            <td style="text-align:right;font-family:var(--mono);color:var(--green);">{{ u.solved_stones }}</td>
+            <td style="text-align:right;font-family:var(--mono);color:var(--dim);">{{ u.attempts }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="card" style="text-align:center;padding:2rem;color:var(--text-dim);font-family:var(--mono);">
+      Nog geen spelers geregistreerd.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
