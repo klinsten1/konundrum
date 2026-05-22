@@ -16,7 +16,7 @@
         <div class="field">
           <label>Naam (unieke ID) *</label>
           <input type="text" name="name" value="{{ stone.name if stone else '' }}" placeholder="S11" required/>
-          <div class="sub">Bijv. S11, BONUS1 — alleen letters/cijfers</div>
+          <div class="sub">Bijv. S11, BONUS1</div>
         </div>
         <div class="field">
           <label>Label (op blok) *</label>
@@ -50,6 +50,12 @@
             {% endfor %}
           {% endif %}
         </div>
+      </div>
+      <div class="field">
+        <label>Tips / inhoud voor de steen-overzichtspagina</label>
+        <textarea name="home_content" rows="5"
+                  placeholder="&lt;p&gt;Hints of uitleg over deze steen...&lt;/p&gt;">{{ stone.home_content if stone else '' }}</textarea>
+        <div class="sub">HTML toegestaan. Wordt getoond boven de sublevel-lijst op de steen-pagina.</div>
       </div>
       <hr class="div"/>
       <div style="display:flex;gap:.75rem;">

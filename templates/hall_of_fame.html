@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Hall of Fame — Konundrum{% endblock %}
+{% block body %}
+<div class="page" style="max-width:720px;">
+  <div class="page-title">// HALL OF FAME</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:2rem;">
+    <div class="card" style="text-align:center;">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">CHALLENGES</div>
+      <div style="font-family:var(--mono);font-size:24px;color:var(--blue);">{{ total_ch }}</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">STENEN</div>
+      <div style="font-family:var(--mono);font-size:24px;color:var(--green);">{{ total_stones }}</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">MAX PUNTEN</div>
+      <div style="font-family:var(--mono);font-size:24px;color:var(--yellow);">{{ total_pts }}</div>
+    </div>
+  </div>
+
+  {% if ranking %}
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="tbl">
+        <thead><tr>
+          <th style="width:48px;">#</th>
+          <th>Speler</th>
+          <th style="text-align:right;">Punten</th>
+          <th style="text-align:right;">Sublevels</th>
+          <th style="text-align:right;">Stenen</th>
+          <th style="text-align:right;">Pogingen</th>
+        </tr></thead>
+        <tbody>
+        {% for r in ranking %}
+          {% set rank = loop.index %}
+          <tr style="{% if r.username == session.username %}background:rgba(0,180,255,.05);{% endif %}">
+            <td style="font-family:var(--mono);font-size:16px;text-align:center;padding-left:.5rem;">
+              {% if rank == 1 %}🥇
+              {% elif rank == 2 %}🥈
+              {% elif rank == 3 %}🥉
+              {% else %}<span style="color:var(--dim)">{{ rank }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <span style="font-family:var(--mono);font-size:14px;color:{% if r.username == session.username %}var(--blue){% else %}var(--text){% endif %};">
+                {{ r.username }}
+                {% if r.username == session.username %}
+                  <span style="font-size:10px;color:var(--dim);"> (jij)</span>
+                {% endif %}
+              </span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);font-size:15px;color:var(--yellow);font-weight:700;">
+              {{ r.total_points }}
+              <span style="font-size:11px;color:var(--dim);font-weight:400;">/{{ total_pts }}</span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);color:var(--blue);">
+              {{ r.solved_challenges }}
+              <span style="font-size:11px;color:var(--dim)">/{{ total_ch }}</span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);color:var(--green);">
+              {{ r.solved_stones }}
+              <span style="font-size:11px;color:var(--dim)">/{{ total_stones }}</span>
+            </td>
+            <td style="text-align:right;font-family:var(--mono);color:var(--dim);">
+              {{ r.total_attempts }}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="card" style="text-align:center;padding:3rem;color:var(--text-dim);font-family:var(--mono);">
+      Nog niemand op de ranglijst. Wees de eerste!
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

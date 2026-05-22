@@ -4,7 +4,10 @@
 <div class="page">
   <div class="flex-between" style="margin-bottom:1.5rem;">
     <div class="page-title">// ADMIN — PIRAMIDE BEHEER</div>
-    <a href="{{ url_for('admin_add_stone') }}" class="btn btn-primary btn-sm">+ Nieuwe steen</a>
+    <div style="display:flex;gap:.5rem;">
+      <a href="{{ url_for('admin_home_content') }}" class="btn btn-secondary btn-sm">✎ Homepagina</a>
+      <a href="{{ url_for('admin_add_stone') }}" class="btn btn-primary btn-sm">+ Nieuwe steen</a>
+    </div>
   </div>
 
   {% if stone_data %}
@@ -18,7 +21,7 @@
     {% for row_num in rows|sort(reverse=true) %}
       <div style="margin-bottom:2rem;">
         <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:.75rem;">
-          RIJ {{ row_num }}{% if row_num==0 %} — onderste rij (startpunt){% endif %}
+          RIJ {{ row_num }}{% if row_num == 0 %} — onderste rij (startpunt){% endif %}
         </div>
         <div class="card" style="padding:0;overflow:hidden;">
           <table class="tbl">
@@ -39,7 +42,8 @@
                   <span class="badge badge-blue">{{ item.challenges|length }}</span>
                   {% for ch in item.challenges %}
                     <span class="badge {% if ch.is_final %}badge-yellow{% else %}badge-dim{% endif %}" style="margin-left:2px;">
-                      {{ ch.slug }}{% if ch.is_final %} ★{% endif %}
+                      {{ ch.title or ch.slug }}{% if ch.is_final %} ★{% endif %}
+                      <span style="color:var(--blue)">+{{ ch.points }}</span>
                     </span>
                   {% endfor %}
                 </td>
@@ -61,8 +65,8 @@
       </div>
     {% endfor %}
 
-    <div class="card" style="margin-top:1rem;font-family:var(--mono);font-size:12px;color:var(--dim);line-height:1.8;">
-      <strong style="color:var(--text-dim)">★</strong> = Finaal sublevel (name + city)<br>
+    <div class="card" style="font-family:var(--mono);font-size:12px;color:var(--dim);line-height:1.8;">
+      <strong style="color:var(--text-dim)">★</strong> = Finaal sublevel (name + city) — wordt als laatste afgedwongen.<br>
       Nieuwe steen toevoegen → piramide groeit automatisch op basis van rij/kolom.
     </div>
   {% else %}

@@ -2,7 +2,7 @@
 {% block title %}Registreren — Konundrum{% endblock %}
 {% block body %}
 <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;">
-  <div style="width:100%;max-width:380px;">
+  <div style="width:100%;max-width:400px;">
     <div style="text-align:center;margin-bottom:2rem;">
       <div style="font-family:var(--mono);font-size:30px;letter-spacing:4px;">
         <span style="color:var(--green)">K</span><span style="color:var(--blue)">onundrum</span>
@@ -12,13 +12,25 @@
     <div class="card">
       {% if error %}<div class="error-box">{{ error }}</div>{% endif %}
       <form method="POST">
-        <div class="field"><label>Kies een username</label>
-          <input type="text" name="username" placeholder="agent_42" autocomplete="username" required autofocus/>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" name="username" placeholder="agent_42"
+                 autocomplete="username" required autofocus/>
         </div>
-        <div class="field"><label>Kies een wachtwoord</label>
-          <input type="password" name="password" placeholder="min. 4 tekens" autocomplete="new-password" required/>
+        <div class="field">
+          <label>E-mailadres</label>
+          <input type="email" name="email" placeholder="jij@voorbeeld.be"
+                 autocomplete="email" required/>
+          <div class="sub">Je ontvangt een bevestigingsmail.</div>
         </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.25rem;">Account aanmaken</button>
+        <div class="field">
+          <label>Wachtwoord</label>
+          <input type="password" name="password" placeholder="min. 4 tekens"
+                 autocomplete="new-password" required/>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.25rem;">
+          Account aanmaken
+        </button>
       </form>
       <div style="text-align:center;margin-top:1.25rem;font-size:13px;color:var(--text-dim);">
         Al een account? <a href="{{ url_for('login') }}">Log in</a>

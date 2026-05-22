@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block title %}{{ stone.label }} — Konundrum{% endblock %}
-
 {% block body %}
 <div class="page-sm">
   <div class="bc">
@@ -8,211 +7,81 @@
     <span>{{ stone.name }} · {{ stone.label }}</span>
   </div>
 
-  <div class="flex-between" style="margin-bottom:1.5rem;">
-    <div style="font-family:var(--mono);font-size:18px;color:var(--blue);letter-spacing:1px;">{{ stone.label }}</div>
-    <div style="font-family:var(--mono);font-size:12px;color:var(--dim);">
+  <div class="flex-between" style="margin-bottom:1.25rem;">
+    <div>
+      <div style="font-family:var(--mono);font-size:20px;color:var(--blue);letter-spacing:1px;">
+        {{ stone.label }}
+      </div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:3px;">
+        {{ stone.name }}
+      </div>
+    </div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--dim);text-align:right;">
       {% set done_count = namespace(v=0) %}
       {% for ch in challenges %}{% if ch.id in solved %}{% set done_count.v = done_count.v+1 %}{% endif %}{% endfor %}
-      <span style="color:var(--blue)">{{ done_count.v }}</span> / {{ challenges|length }}
+      <span style="color:var(--blue)">{{ done_count.v }}</span> / {{ challenges|length }} opgelost
     </div>
   </div>
 
-  {% if stone_done %}
-    <div class="stone-done-banner">
-      ██ STEEN VOLLEDIG ONTCIJFERD ██
-      <div style="font-size:11px;opacity:.6;margin-top:4px;">Nieuwe stenen kunnen nu ontgrendeld zijn.</div>
+  {# Tips/inhoud voor deze steen #}
+  {% if stone.home_content %}
+    <div class="card" style="margin-bottom:1.5rem;line-height:1.7;font-size:14px;color:var(--text);border-color:var(--border2);">
+      {{ stone.home_content|safe }}
     </div>
   {% endif %}
 
-  {% for ch in challenges %}
-    {% set is_solved = ch.id in solved %}
-    <div class="ch-block {% if is_solved %}solved{% endif %}" id="ch-{{ ch.id }}">
+  {% if stone_done %}
+    <div class="stone-done-banner" style="margin-bottom:1.25rem;">
+      ✅ Steen volledig ontcijferd!
+      <div style="font-size:11px;opacity:.6;margin-top:3px;">Nieuwe stenen kunnen nu ontgrendeld zijn.</div>
+    </div>
+  {% endif %}
 
-      
-      <div class="ch-num">
-        <span>SUBLEVEL {{ loop.index }} / {{ challenges|length }}</span>
-        <span class="ch-type-badge {% if ch.is_final %}badge-final{% else %}badge-single{% endif %}">
-          {% if ch.is_final %}NAME + CITY{% else %}SINGLE{% endif %}
-        </span>
-      </div>
+  {# Sublevel kaarten — zonder inhoud, klikbaar naar aparte pagina #}
+  <div style="display:flex;flex-direction:column;gap:.75rem;">
+    {% for ch in challenges %}
+      {% set is_solved = ch.id in solved %}
+      {% set meta = ch_meta[ch.id] %}
+      {% set locked = meta.final_locked %}
 
-      
-      <div class="ch-content">
-        {{ challenge_html[ch.id] }}
-      </div>
-
-      
-      <div class="answer-section">
-        {% if is_solved %}
-          <div class="solved-badge">✅ Dit sublevel is opgelost.</div>
-
-        {% elif ch.is_final %}
-          
-          <div class="answer-grid two-col" id="grid-{{ ch.id }}">
-            <div class="answer-row">
-              <div class="answer-label">Naam</div>
-              <div class="answer-input-wrap">
-                <input class="answer-input" id="inp-name-{{ ch.id }}"
-                       type="text" placeholder="Naam..." autocomplete="off"
-                       data-field="answer_name"/>
-              </div>
-              <div class="field-fb" id="fb-name-{{ ch.id }}"></div>
+      <div style="background:var(--bg2);border:1px solid {% if is_solved %}rgba(0,255,136,.3){% elif locked %}var(--border){% else %}var(--border2){% endif %};border-radius:6px;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+        <div style="display:flex;align-items:center;gap:.75rem;flex:1;min-width:0;">
+          <div style="font-size:20px;flex-shrink:0;">
+            {% if is_solved %}✅{% elif locked %}🔒{% else %}🔓{% endif %}
+          </div>
+          <div style="min-width:0;">
+            <div style="font-family:var(--mono);font-size:13px;color:{% if is_solved %}var(--green){% elif locked %}var(--dim){% else %}var(--blue){% endif %};">
+              {{ ch.title or ch.slug }}
             </div>
-            <div class="answer-row">
-              <div class="answer-label">Stad</div>
-              <div class="answer-input-wrap">
-                <input class="answer-input" id="inp-city-{{ ch.id }}"
-                       type="text" placeholder="Stad..." autocomplete="off"
-                       data-field="answer_city"/>
-              </div>
-              <div class="field-fb" id="fb-city-{{ ch.id }}"></div>
+            <div style="font-size:12px;color:var(--text-dim);margin-top:2px;display:flex;gap:.75rem;flex-wrap:wrap;">
+              <span>
+                {% if ch.is_final %}
+                  <span style="color:var(--yellow)">★ NAME+CITY</span>
+                  {% if locked %}<span style="color:var(--red)"> — los eerst andere sublevels op</span>{% endif %}
+                {% else %}
+                  SINGLE
+                {% endif %}
+              </span>
+              <span style="color:var(--blue)">+{{ ch.points }} pts</span>
+              {% if meta.attempts > 0 %}
+                <span>{{ meta.attempts }} poging{% if meta.attempts != 1 %}en{% endif %}</span>
+              {% endif %}
             </div>
           </div>
-          <div class="mt2">
-            <button class="check-btn" onclick="checkFinal({{ ch.id }})" id="btn-{{ ch.id }}">
-              Controleer
-            </button>
-          </div>
+        </div>
 
-        {% else %}
-          
-          <div class="answer-grid" id="grid-{{ ch.id }}">
-            <div class="answer-row">
-              <div class="answer-label">Antwoord</div>
-              <div class="answer-input-wrap">
-                <input class="answer-input" id="inp-1-{{ ch.id }}"
-                       type="text" placeholder="Jouw antwoord..." autocomplete="off"
-                       data-field="answer_1"/>
-                <button class="check-btn" onclick="checkSingle({{ ch.id }})" id="btn-{{ ch.id }}">
-                  Controleer
-                </button>
-              </div>
-            </div>
-            <div class="field-fb" id="fb-1-{{ ch.id }}"></div>
-          </div>
+        {% if not locked %}
+          <a href="{{ url_for('challenge_view', slug=ch.slug) }}"
+             class="btn btn-secondary btn-sm" style="flex-shrink:0;">
+            {% if is_solved %}Bekijk{% else %}Oplossen →{% endif %}
+          </a>
         {% endif %}
       </div>
+    {% endfor %}
+  </div>
 
-    </div>
-  {% endfor %}
-
-  <div class="mt2">
+  <div class="mt3">
     <a href="{{ url_for('pyramid') }}" class="btn btn-secondary btn-sm">← Terug naar piramide</a>
   </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-/* Alle antwoord-check calls gaan via /api/check — nooit antwoorden in de pagina. */
-
-async function postCheck(payload) {
-  const res = await fetch('/api/check', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(payload)
-  });
-  return res.json();
-}
-
-function applyFieldFeedback(inputEl, fbEl, fieldResult) {
-  inputEl.classList.remove('ok','hint','wrong');
-  fbEl.className = 'field-fb';
-  if (!fieldResult) return;
-  const st = fieldResult.status;
-  if (st === 'correct') { inputEl.classList.add('ok');   fbEl.classList.add('correct'); }
-  if (st === 'hint')    { inputEl.classList.add('hint'); fbEl.classList.add('hint'); }
-  if (st === 'wrong')   { inputEl.classList.add('wrong');fbEl.classList.add('wrong'); }
-  fbEl.textContent = fieldResult.msg || '';
-}
-
-function markSolved(challengeId) {
-  const block = document.getElementById('ch-' + challengeId);
-  block.classList.add('solved');
-  const answerSection = block.querySelector('.answer-section');
-  answerSection.innerHTML = '<div class="solved-badge">✅ Dit sublevel is opgelost.</div>';
-}
-
-function showStoneDone() {
-  if (document.querySelector('.stone-done-banner')) return;
-  const banner = document.createElement('div');
-  banner.className = 'stone-done-banner';
-  banner.innerHTML = '██ STEEN VOLLEDIG ONTCIJFERD ██' +
-    '<div style="font-size:11px;opacity:.6;margin-top:4px;">Nieuwe stenen zijn nu misschien ontgrendeld.</div>';
-  const page = document.querySelector('.page-sm');
-  const first = page.querySelector('.ch-block');
-  page.insertBefore(banner, first);
-  banner.scrollIntoView({behavior:'smooth', block:'center'});
-}
-
-async function checkSingle(id) {
-  const inp = document.getElementById('inp-1-' + id);
-  const fb  = document.getElementById('fb-1-'  + id);
-  const btn = document.getElementById('btn-'   + id);
-  if (!inp.value.trim()) return;
-  btn.disabled = true;
-
-  try {
-    const data = await postCheck({challenge_id: id, answer_1: inp.value.trim()});
-    applyFieldFeedback(inp, fb, data.fields && data.fields.answer_1);
-    if (data.result === 'correct') {
-      markSolved(id);
-      if (data.stone_completed) showStoneDone();
-    } else {
-      btn.disabled = false;
-      inp.focus();
-    }
-  } catch(e) {
-    fb.textContent = 'Verbindingsfout, probeer opnieuw.';
-    fb.className = 'field-fb wrong';
-    btn.disabled = false;
-  }
-}
-
-async function checkFinal(id) {
-  const inpName = document.getElementById('inp-name-' + id);
-  const inpCity = document.getElementById('inp-city-' + id);
-  const fbName  = document.getElementById('fb-name-'  + id);
-  const fbCity  = document.getElementById('fb-city-'  + id);
-  const btn     = document.getElementById('btn-'      + id);
-  btn.disabled  = true;
-
-  try {
-    const data = await postCheck({
-      challenge_id: id,
-      answer_name: inpName.value.trim(),
-      answer_city: inpCity.value.trim()
-    });
-    const f = data.fields || {};
-    applyFieldFeedback(inpName, fbName, f.answer_name);
-    applyFieldFeedback(inpCity, fbCity, f.answer_city);
-    if (data.result === 'correct') {
-      markSolved(id);
-      if (data.stone_completed) showStoneDone();
-    } else {
-      btn.disabled = false;
-      // Focus op eerste fout veld
-      if (f.answer_name && f.answer_name.status !== 'correct') inpName.focus();
-      else inpCity.focus();
-    }
-  } catch(e) {
-    fbName.textContent = 'Verbindingsfout, probeer opnieuw.';
-    fbName.className = 'field-fb wrong';
-    btn.disabled = false;
-  }
-}
-
-// Enter-toets support
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.answer-input').forEach(inp => {
-    inp.addEventListener('keydown', e => {
-      if (e.key !== 'Enter') return;
-      const block = inp.closest('.ch-block');
-      const id    = parseInt(block.id.replace('ch-',''));
-      const btn   = document.getElementById('btn-' + id);
-      if (btn && !btn.disabled) btn.click();
-    });
-  });
-});
-</script>
 {% endblock %}
