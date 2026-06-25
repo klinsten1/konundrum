@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Mijn Stats — Konundrum{% endblock %}
+{% block title %}My Stats — Konundrum{% endblock %}
 {% block body %}
 <div class="page" style="max-width:760px;">
-  <div class="page-title">// MIJN STATS — {{ session.username }}</div>
+  <div class="page-title">// MY STATS — {{ session.username }}</div>
 
-  {# Overzicht kaarten #}
+  {# Overview cards #}
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;">
     <div class="card" style="text-align:center;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">PUNTEN</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">POINTS</div>
       <div style="font-family:var(--mono);font-size:26px;color:var(--yellow);">{{ stats.points }}</div>
       <div style="font-size:11px;color:var(--dim);">/ {{ total_pts }}</div>
     </div>
@@ -17,19 +17,19 @@
       <div style="font-size:11px;color:var(--dim);">/ {{ total_ch }}</div>
     </div>
     <div class="card" style="text-align:center;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">STENEN</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">STONES</div>
       <div style="font-family:var(--mono);font-size:26px;color:var(--green);">{{ stats.solved_stones }}</div>
       <div style="font-size:11px;color:var(--dim);">/ {{ total_st }}</div>
     </div>
     <div class="card" style="text-align:center;">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">POGINGEN</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">ATTEMPTS</div>
       <div style="font-family:var(--mono);font-size:26px;color:var(--dim);">{{ stats.total_attempts }}</div>
     </div>
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
 
-    {# Pogingen per sublevel #}
+    {# Attempts per sublevel #}
     <div>
       <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:.75rem;text-transform:uppercase;">Sublevels</div>
       {% if stats.attempts_per_challenge %}
@@ -37,8 +37,8 @@
           <table class="tbl">
             <thead><tr>
               <th>Sublevel</th>
-              <th style="text-align:right;">Pogingen</th>
-              <th style="text-align:right;">Punten</th>
+              <th style="text-align:right;">Attempts</th>
+              <th style="text-align:right;">Points</th>
             </tr></thead>
             <tbody>
             {% for a in stats.attempts_per_challenge %}
@@ -62,14 +62,14 @@
         </div>
       {% else %}
         <div class="card" style="color:var(--text-dim);font-family:var(--mono);font-size:13px;text-align:center;padding:2rem;">
-          Nog geen pogingen gedaan.
+          No attempts yet.
         </div>
       {% endif %}
     </div>
 
     {# Solve history #}
     <div>
-      <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:.75rem;text-transform:uppercase;">Geschiedenis</div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:.75rem;text-transform:uppercase;">History</div>
       {% if stats.history %}
         <div class="card" style="padding:0;overflow:hidden;max-height:480px;overflow-y:auto;">
           {% for h in stats.history %}
@@ -79,7 +79,7 @@
               </span>
               <div style="flex:1;min-width:0;">
                 <div style="font-family:var(--mono);font-size:12px;color:{% if h.event_type=='stone' %}var(--yellow){% else %}var(--green){% endif %};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                  {% if h.event_type == 'stone' %}Steen voltooid: {% endif %}{{ h.label }}
+                  {% if h.event_type == 'stone' %}Stone completed: {% endif %}{{ h.label }}
                 </div>
                 <div style="font-size:11px;color:var(--dim);">{{ h.happened_at[:16] }}</div>
               </div>
@@ -91,7 +91,7 @@
         </div>
       {% else %}
         <div class="card" style="color:var(--text-dim);font-family:var(--mono);font-size:13px;text-align:center;padding:2rem;">
-          Nog niets opgelost.
+          Nothing solved yet.
         </div>
       {% endif %}
     </div>
@@ -100,7 +100,7 @@
 
   <div class="mt3">
     <a href="{{ url_for('hall_of_fame') }}" class="btn btn-secondary btn-sm">🏆 Hall of Fame</a>
-    <a href="{{ url_for('pyramid') }}" class="btn btn-secondary btn-sm" style="margin-left:.5rem;">🔺 Piramide</a>
+    <a href="{{ url_for('pyramid') }}" class="btn btn-secondary btn-sm" style="margin-left:.5rem;">🔺 Pyramid</a>
   </div>
 </div>
 {% endblock %}

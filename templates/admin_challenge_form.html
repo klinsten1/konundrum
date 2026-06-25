@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{% if challenge %}Sublevel bewerken{% else %}Nieuw sublevel{% endif %} — Konundrum{% endblock %}
+{% block title %}{% if challenge %}Edit sublevel{% else %}New sublevel{% endif %} — Konundrum{% endblock %}
 
 {% block body %}
 <div class="page-sm">
@@ -7,9 +7,9 @@
     <a href="{{ url_for('admin') }}">Admin</a> &nbsp;/&nbsp;
     <a href="{{ url_for('admin_stone_challenges', stone_id=stone.id) }}">{{ stone.name }} · {{ stone.label }}</a>
     &nbsp;/&nbsp;
-    <span>{% if challenge %}Bewerken{% else %}Nieuw sublevel{% endif %}</span>
+    <span>{% if challenge %}Edit{% else %}New sublevel{% endif %}</span>
   </div>
-  <div class="page-title">// {% if challenge %}SUBLEVEL BEWERKEN{% else %}NIEUW SUBLEVEL{% endif %}</div>
+  <div class="page-title">// {% if challenge %}EDIT SUBLEVEL{% else %}NEW SUBLEVEL{% endif %}</div>
 
   {% if error %}<div class="error-box">{{ error }}</div>{% endif %}
 
@@ -18,76 +18,70 @@
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
         <div class="field">
-          <label>Slug (bestandsnaam) *</label>
+          <label>Slug (filename) *</label>
           <input type="text" name="slug" id="slug-inp"
                  value="{{ challenge.slug if challenge else '' }}"
                  placeholder="s1_c1" required
                  pattern="[a-zA-Z0-9_-]+"
                  oninput="updatePreview()"/>
           <div class="sub">
-            Bestand: <code id="slug-preview">challenges/{{ challenge.slug if challenge else '…' }}.html</code>
+            File: <code id="slug-preview">challenges/{{ challenge.slug if challenge else '…' }}.html</code>
           </div>
         </div>
         <div class="field">
-          <label>Titel (weergavenaam)</label>
+          <label>Title (display name)</label>
           <input type="text" name="title"
                  value="{{ challenge.title if challenge else '' }}"
-                 placeholder="Bijv. ROT13 cipher"/>
-          <div class="sub">Getoond op de steen- en challengepagina.</div>
+                 placeholder="E.g. ROT13 cipher"/>
+          <div class="sub">Shown on the stone and challenge page.</div>
         </div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
         <div class="field">
-          <label>Punten</label>
+          <label>Points</label>
           <input type="number" name="points"
                  value="{{ challenge.points if challenge else 10 }}"
                  min="1" max="1000"/>
-          <div class="sub">Punten bij correcte oplossing.</div>
+          <div class="sub">Points awarded for correct solution.</div>
         </div>
         <div class="field">
-          <label>Volgorde</label>
+          <label>Order</label>
           <input type="number" name="order"
                  value="{{ challenge.ord if challenge else next_order }}"
                  min="0"/>
-          <div class="sub">Lagere nummers komen eerst (start bij 0).</div>
+          <div class="sub">Lower numbers come first (start at 0).</div>
         </div>
       </div>
 
       <div class="field">
-        <label>Type sublevel</label>
+        <label>Sublevel type</label>
         <div style="display:flex;gap:1.5rem;margin-top:.25rem;">
           <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:14px;text-transform:none;letter-spacing:0;">
             <input type="radio" name="is_final" value="" id="type-single"
                    {% if not challenge or not challenge.is_final %}checked{% endif %}
                    onchange="toggleType(false)"/>
-            <span><span class="badge badge-dim">SINGLE</span> — één antwoordveld</span>
+            <span><span class="badge badge-dim">SINGLE</span> — one answer field</span>
           </label>
           <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:14px;text-transform:none;letter-spacing:0;">
             <input type="radio" name="is_final" value="1" id="type-final"
                    {% if challenge and challenge.is_final %}checked{% endif %}
                    onchange="toggleType(true)"/>
-            <span><span class="badge badge-yellow">NAME + CITY ★</span> — twee antwoordvelden</span>
+            <span><span class="badge badge-yellow">NAME + CITY ★</span> — two answer fields</span>
           </label>
         </div>
-        <div class="sub mt1">NAME+CITY moet als laatste worden opgelost (app dwingt dit af).</div>
+        <div class="sub mt1">NAME+CITY must be solved last (app enforces this).</div>
       </div>
 
       <hr class="div"/>
 
       <div id="section-single" {% if challenge and challenge.is_final %}style="display:none"{% endif %}>
         <div class="field">
-          <label>Antwoord *</label>
+          <label>Answer *</label>
           <input type="text" name="answer_1"
                  value="{{ challenge.answer_1 if challenge else '' }}"
-                 placeholder="Het correcte antwoord"/>
-          <div class="sub">Hoofdletterongevoelig.</div>
-        </div>
-        <div class="field">
-          <label>Hint bij "bijna correct"</label>
-          <input type="text" name="hint_1"
-                 value="{{ challenge.hint_1 if challenge else '' }}"
-                 placeholder="Een aanwijzing richting het juiste antwoord..."/>
+                 placeholder="The correct answer"/>
+          <div class="sub">Case-insensitive.</div>
         </div>
       </div>
 
@@ -95,30 +89,18 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
           <div>
             <div class="field">
-              <label>Naam (antwoord) *</label>
+              <label>Name (answer) *</label>
               <input type="text" name="answer_name"
                      value="{{ challenge.answer_name if challenge else '' }}"
-                     placeholder="Voornaam Achternaam"/>
-            </div>
-            <div class="field">
-              <label>Hint bij naam</label>
-              <input type="text" name="hint_name"
-                     value="{{ challenge.hint_name if challenge else '' }}"
-                     placeholder="Aanwijzing voor de naam..."/>
+                     placeholder="First Last"/>
             </div>
           </div>
           <div>
             <div class="field">
-              <label>Stad (antwoord) *</label>
+              <label>City (answer) *</label>
               <input type="text" name="answer_city"
                      value="{{ challenge.answer_city if challenge else '' }}"
-                     placeholder="Stad"/>
-            </div>
-            <div class="field">
-              <label>Hint bij stad</label>
-              <input type="text" name="hint_city"
-                     value="{{ challenge.hint_city if challenge else '' }}"
-                     placeholder="Aanwijzing voor de stad..."/>
+                     placeholder="City"/>
             </div>
           </div>
         </div>
@@ -126,33 +108,36 @@
 
       <hr class="div"/>
 
-      <div class="field">
-        <label>Hint drempel (%)</label>
-        <input type="number" name="hint_threshold"
-               value="{{ ((challenge.hint_threshold if challenge else 0.6)*100)|int }}"
-               min="0" max="100" style="max-width:120px;"/>
-        <div class="sub">
-          Bij welk % gelijkenis wordt "bijna!" getoond? 0 = nooit. Standaard: 60%.
+      {% if challenge %}
+      <div class="card" style="background:var(--bg);border-color:var(--border2);margin-bottom:1.25rem;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">HINTS</div>
+        <p style="font-size:13px;color:var(--text-dim);line-height:1.6;">
+          Hints are managed separately. Add trigger answers that show specific hints to players.
+        </p>
+        <div class="mt1">
+          <a href="{{ url_for('admin_challenge_hints', challenge_id=challenge.id) }}"
+             class="btn btn-secondary btn-sm">💡 Manage hints</a>
         </div>
       </div>
+      {% endif %}
 
       <div class="card" style="background:var(--bg);border-color:var(--border2);margin-bottom:1.25rem;">
-        <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">VRAAGBESTAND</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">CHALLENGE FILE</div>
         <div style="font-family:var(--mono);font-size:13px;color:var(--blue);" id="file-path-preview">
           challenges/{{ challenge.slug if challenge else '…' }}.html
         </div>
         <div style="font-size:13px;color:var(--text-dim);margin-top:.5rem;line-height:1.6;">
-          Wordt automatisch aangemaakt met starttemplate. Bewerk het daarna vrij.<br>
-          Antwoorden staan <strong style="color:var(--red)">nooit</strong> in dit bestand.
+          Automatically created with a starter template. Edit freely afterwards.<br>
+          Answers are <strong style="color:var(--red)">never</strong> stored in this file.
         </div>
       </div>
 
       <div style="display:flex;gap:.75rem;">
-        <button type="submit" class="btn btn-primary" onclick="return prepareSubmit()">
-          {{ 'Opslaan' if challenge else 'Sublevel aanmaken' }}
+        <button type="submit" class="btn btn-primary">
+          {{ 'Save' if challenge else 'Create sublevel' }}
         </button>
         <a href="{{ url_for('admin_stone_challenges', stone_id=stone.id) }}"
-           class="btn btn-secondary">Annuleren</a>
+           class="btn btn-secondary">Cancel</a>
       </div>
     </form>
   </div>
@@ -169,11 +154,6 @@ function updatePreview() {
   const slug = document.getElementById('slug-inp').value || '…';
   document.getElementById('slug-preview').textContent      = 'challenges/' + slug + '.html';
   document.getElementById('file-path-preview').textContent = 'challenges/' + slug + '.html';
-}
-function prepareSubmit() {
-  const inp = document.querySelector('input[name="hint_threshold"]');
-  inp.value = (parseFloat(inp.value) / 100).toFixed(2);
-  return true;
 }
 updatePreview();
 </script>

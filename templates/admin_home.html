@@ -1,30 +1,30 @@
 {% extends "base.html" %}
-{% block title %}Homepagina bewerken — Konundrum{% endblock %}
+{% block title %}Edit {{ page|capitalize }} — Konundrum{% endblock %}
 {% block body %}
 <div class="page-sm">
   <div class="bc">
     <a href="{{ url_for('admin') }}">Admin</a> &nbsp;/&nbsp;
-    <span>Homepagina</span>
+    <span>{{ page|capitalize }} page</span>
   </div>
-  <div class="page-title">// HOMEPAGINA BEWERKEN</div>
+  <div class="page-title">// EDIT {{ page|upper }} PAGE</div>
 
   {% if msg %}<div class="success-box">{{ msg }}</div>{% endif %}
 
   <div class="card">
     <form method="POST">
       <div class="field">
-        <label>HTML inhoud</label>
+        <label>HTML content</label>
         <textarea name="content" rows="20"
                   style="font-family:var(--mono);font-size:13px;">{{ content }}</textarea>
         <div class="sub">
-          Je kunt gewone HTML gebruiken: &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;strong&gt;, &lt;a href="..."&gt; enz.
-          CSS variabelen zoals <code style="color:var(--blue)">var(--green)</code> en <code style="color:var(--blue)">var(--blue)</code> werken ook.
+          You can use regular HTML: &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;strong&gt;, &lt;a href="..."&gt; etc.
+          CSS variables like <code style="color:var(--blue)">var(--green)</code> and <code style="color:var(--blue)">var(--blue)</code> also work.
         </div>
       </div>
       <hr class="div"/>
       <div style="display:flex;gap:.75rem;align-items:center;">
-        <button type="submit" class="btn btn-primary">Opslaan</button>
-        <a href="{{ url_for('home') }}" class="btn btn-secondary">Bekijk homepage</a>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{{ url_for('home') }}" class="btn btn-secondary">View page</a>
         <a href="{{ url_for('admin') }}" class="btn btn-secondary">Admin</a>
       </div>
     </form>

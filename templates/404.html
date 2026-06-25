@@ -13,12 +13,12 @@
       {% else %}NOT FOUND{% endif %}
     </div>
     <div style="font-size:14px;color:var(--text-dim);margin-bottom:2rem;line-height:1.7;">
-      {{ msg or "De pagina die je zoekt bestaat niet of is verplaatst." }}
+      {{ msg or "The page you're looking for doesn't exist or has been moved." }}
     </div>
     {% if session.user_id %}
-      <a href="{{ url_for('home') }}" class="btn btn-secondary">← Terug naar home</a>
+      <a href="{{ url_for('home') }}" class="btn btn-secondary">← Back to home</a>
     {% else %}
-      <a href="{{ url_for('login') }}" class="btn btn-secondary">← Inloggen</a>
+      <a href="{{ url_for('login') }}" class="btn btn-secondary">← Log in</a>
     {% endif %}
   </div>
 </div>

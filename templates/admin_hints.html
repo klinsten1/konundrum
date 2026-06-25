@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Hints — {{ challenge.title or challenge.slug }} — Konundrum{% endblock %}
+{% block body %}
+<div class="page-sm">
+  <div class="bc">
+    <a href="{{ url_for('admin') }}">Admin</a> &nbsp;/&nbsp;
+    <a href="{{ url_for('admin_stone_challenges', stone_id=stone.id) }}">{{ stone.name }} · {{ stone.label }}</a>
+    &nbsp;/&nbsp;
+    <a href="{{ url_for('admin_edit_challenge', challenge_id=challenge.id) }}">{{ challenge.title or challenge.slug }}</a>
+    &nbsp;/&nbsp;
+    <span>Hints</span>
+  </div>
+  <div class="page-title">// MANAGE HINTS</div>
+
+  {% if msg %}<div class="success-box">{{ msg }}</div>{% endif %}
+
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:.75rem;">HOW IT WORKS</div>
+    <p style="font-size:13px;color:var(--text-dim);line-height:1.7;">
+      Add trigger answers below. When a player enters exactly this answer (case-insensitive),
+      they will see the associated hint. You can add multiple triggers per challenge.
+    </p>
+  </div>
+
+  {# Existing hints #}
+  {% if hints %}
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:.75rem;">
+      CURRENT HINTS ({{ hints|length }})
+    </div>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Trigger answer</th>
+          <th>Hint</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in hints %}
+        <tr>
+          <td><span class="badge badge-blue">{{ h.field }}</span></td>
+          <td style="font-family:var(--mono);font-size:13px;color:var(--yellow);">{{ h.trigger_answer }}</td>
+          <td style="font-size:13px;">{{ h.hint_text }}</td>
+          <td>
+            <form method="POST" style="margin:0;" onsubmit="return confirm('Delete hint?')">
+              <input type="hidden" name="action" value="delete"/>
+              <input type="hidden" name="hint_id" value="{{ h.id }}"/>
+              <button type="submit" class="btn btn-danger btn-sm">✕</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {# Add new hint #}
+  <div class="card">
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:.75rem;">ADD HINT</div>
+    <form method="POST">
+      <input type="hidden" name="action" value="add"/>
+
+      <div class="field">
+        <label>Field</label>
+        <select name="field">
+          {% if challenge.is_final %}
+            <option value="answer_name">Name (answer_name)</option>
+            <option value="answer_city">City (answer_city)</option>
+          {% else %}
+            <option value="answer_1">Answer (answer_1)</option>
+          {% endif %}
+        </select>
+        <div class="sub">Which input field this hint responds to.</div>
+      </div>
+
+      <div class="field">
+        <label>Trigger answer *</label>
+        <input type="text" name="trigger_answer" placeholder="The wrong answer that triggers this hint" required/>
+        <div class="sub">Case-insensitive. Must match exactly what the player types.</div>
+      </div>
+
+      <div class="field">
+        <label>Hint text *</label>
+        <input type="text" name="hint_text" placeholder="The clue shown to the player..." required/>
+        <div class="sub">Displayed when the player enters the trigger answer.</div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Add hint</button>
+    </form>
+  </div>
+
+  <div class="mt3">
+    <a href="{{ url_for('admin_stone_challenges', stone_id=stone.id) }}" class="btn btn-secondary btn-sm">← Back to sublevels</a>
+  </div>
+</div>
+{% endblock %}

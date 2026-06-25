@@ -1,25 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Bevestig je e-mail — Konundrum{% endblock %}
+{% block title %}Confirm your email — Konundrum{% endblock %}
 {% block body %}
 <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;">
   <div style="width:100%;max-width:420px;text-align:center;">
     <div style="font-size:56px;margin-bottom:1rem;">📬</div>
     <div style="font-family:var(--mono);font-size:18px;color:var(--green);letter-spacing:2px;margin-bottom:1rem;">
-      BIJNA KLAAR
+      ALMOST THERE
     </div>
     <div class="card" style="text-align:left;line-height:1.8;">
-      <p>We hebben een bevestigingsmail gestuurd naar:</p>
+      <p>We sent a confirmation email to:</p>
       <p style="font-family:var(--mono);color:var(--blue);margin:.5rem 0;">{{ email }}</p>
-      <p>Klik op de link in de mail om je account te activeren en in te loggen.</p>
+      <p>Click the link in the email to activate your account and log in.</p>
       <hr class="div"/>
       <p style="color:var(--text-dim);font-size:13px;">
-        Geen mail ontvangen? Controleer je spam-map.<br>
-        Als je geen mailserver hebt geconfigureerd, kan de admin je account
-        handmatig bevestigen via de admin-overzichtspagina.
+        Didn't receive an email? Check your spam folder.<br>
+        If no mail server is configured, the admin can manually confirm
+        your account via the admin overview page.
       </p>
     </div>
     <div class="mt2">
-      <a href="{{ url_for('login') }}" class="btn btn-secondary">← Terug naar login</a>
+      <a href="{{ url_for('login') }}" class="btn btn-secondary">← Back to login</a>
     </div>
   </div>
 </div>
