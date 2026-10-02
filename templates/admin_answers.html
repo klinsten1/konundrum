@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Answers — Konundrum{% endblock %}
+{% block body %}
+<div class="page">
+  <div class="bc">
+    <a href="{{ url_for('admin') }}">Admin</a> &nbsp;/&nbsp;
+    {% if challenge %}
+      <a href="{{ url_for('admin_stone_challenges', stone_id=stone.id) }}">{{ stone.name }} · {{ stone.label }}</a>
+      &nbsp;/&nbsp;<span>Answers · {{ challenge.title or challenge.slug }}</span>
+    {% else %}
+      <span>Answers</span>
+    {% endif %}
+  </div>
+
+  <div class="flex-between" style="margin-bottom:1.5rem;">
+    <div class="page-title" style="margin-bottom:0;">
+      // ANSWER LOG{% if challenge %} — {{ challenge.title or challenge.slug }}{% endif %}
+    </div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--text-dim);">{{ total }} entries</div>
+  </div>
+
+  {% if log %}
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="tbl">
+        <thead><tr>
+          <th>When</th>
+          <th>User</th>
+          {% if not challenge %}<th>Puzzle</th>{% endif %}
+          <th>Field</th>
+          <th>Submitted answer</th>
+          <th>Result</th>
+        </tr></thead>
+        <tbody>
+        {% for a in log %}
+          <tr>
+            <td style="font-family:var(--mono);font-size:12px;color:var(--text-dim);white-space:nowrap;">{{ a.created_at[:16] }}</td>
+            <td style="font-family:var(--mono);font-size:12px;color:var(--blue);">{{ a.username }}</td>
+            {% if not challenge %}
+              <td style="font-family:var(--mono);font-size:12px;color:var(--text-dim);">{{ a.title or a.slug or a.challenge_id }}</td>
+            {% endif %}
+            <td style="font-family:var(--mono);font-size:11px;color:var(--dim);">{{ a.field }}</td>
+            <td style="font-family:var(--mono);font-size:13px;color:var(--text);">{{ a.submitted_answer }}</td>
+            <td>
+              {% if a.is_correct %}
+                <span class="badge badge-green">✓ correct</span>
+              {% else %}
+                <span class="badge badge-dim">✗ wrong</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card mt2" style="font-family:var(--mono);font-size:12px;color:var(--dim);line-height:1.8;">
+      Every submitted (non-empty) answer is logged here — correct and wrong.
+      Use it to see common wrong guesses and tune hints.
+    </div>
+  {% else %}
+    <div class="card" style="text-align:center;padding:3rem;color:var(--text-dim);font-family:var(--mono);">
+      No answers logged yet.
+    </div>
+  {% endif %}
+
+  <div class="mt2">
+    {% if challenge %}
+      <a href="{{ url_for('admin_stone_challenges', stone_id=stone.id) }}" class="btn btn-secondary btn-sm">← Back to sublevels</a>
+    {% else %}
+      <a href="{{ url_for('admin') }}" class="btn btn-secondary btn-sm">← Back to admin</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

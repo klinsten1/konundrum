@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign_label }} — Konundrum{% endblock %}
+{% block body %}
+<div class="page">
+  <div class="flex-between" style="margin-bottom:1.5rem;">
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <div class="page-title" style="margin-bottom:0;">// {{ campaign_label|upper }} PYRAMID</div>
+      {# Campaign switcher — appears automatically once a second pyramid unlocks. #}
+      {% set selectable = campaigns | selectattr('unlocked') | list %}
+      {% if selectable | length > 1 %}
+        <select onchange="if(this.value){window.location=this.value;}"
+                style="background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:12px;padding:4px 8px;">
+          {% for c in selectable %}
+            <option value="{{ url_for('greeks') if c.key == 'greeks' else url_for('board', campaign=c.key) }}"
+                    {% if c.key == campaign %}selected{% endif %}>{{ c.label }}</option>
+          {% endfor %}
+        </select>
+      {% endif %}
+    </div>
+    <div style="font-family:var(--mono);font-size:13px;color:var(--blue);">{{ score }} / {{ total }} solved</div>
+  </div>
+
+  <div class="pyr-wrap">
+    {# Pyramid displayed top-to-bottom (highest row on top) #}
+    {% for row_num, stones in rows|reverse %}
+      <div class="pyr-row">
+        {% for s in stones %}
+          {% set st = s.status %}
+          {% if st == 'locked' %}
+            <div class="stone stone-locked" title="Locked — solve the required stones first">
+          {% else %}
+            <a href="{{ url_for('stone_view', stone_id=s.stone.id) }}" class="stone stone-{{ st }}">
+          {% endif %}
+            <span class="stone-id">{{ s.stone.name }}</span>
+            <span class="stone-icon">
+              {%- if st=='locked' %}🔒
+              {%- elif st=='complete' %}✅
+              {%- elif st=='partial' %}⚡
+              {%- else %}🔓{%- endif %}
+            </span>
+            <span class="stone-lbl">{{ s.stone.label }}</span>
+            <div class="stone-bar">
+              <div class="stone-bar-fill" style="width:{{ s.pct }}%;background:{% if st=='complete' %}var(--green){% else %}var(--blue){% endif %};"></div>
+            </div>
+          {% if st == 'locked' %}
+            </div>
+          {% else %}
+            </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:.5rem;">
+    ↑ TOP &nbsp;·&nbsp; click an unlocked stone &nbsp;·&nbsp; BOTTOM ↓
+  </div>
+
+  <div style="display:flex;gap:1.5rem;justify-content:center;margin-top:1.5rem;font-family:var(--mono);font-size:11px;color:var(--dim);">
+    <span>🔒 locked</span>
+    <span style="color:var(--blue)">🔓 available</span>
+    <span style="color:#00d4a0">⚡ in progress</span>
+    <span style="color:var(--green)">✅ completed</span>
+  </div>
+</div>
+{% endblock %}
