@@ -3,7 +3,7 @@
 {% block body %}
 <div class="page-sm">
   <div class="bc">
-    <a href="{{ url_for('pyramid') }}">Piramide</a> &nbsp;/&nbsp;
+    <a href="{{ url_for('greeks') }}">Greeks</a> &nbsp;/&nbsp;
     <span>{{ stone.name }} · {{ stone.label }}</span>
   </div>
 
@@ -19,11 +19,11 @@
     <div style="font-family:var(--mono);font-size:12px;color:var(--dim);text-align:right;">
       {% set done_count = namespace(v=0) %}
       {% for ch in challenges %}{% if ch.id in solved %}{% set done_count.v = done_count.v+1 %}{% endif %}{% endfor %}
-      <span style="color:var(--blue)">{{ done_count.v }}</span> / {{ challenges|length }} opgelost
+      <span style="color:var(--blue)">{{ done_count.v }}</span> / {{ challenges|length }} solved
     </div>
   </div>
 
-  {# Tips/inhoud voor deze steen #}
+  {# Tips/content for this stone #}
   {% if stone.home_content %}
     <div class="card" style="margin-bottom:1.5rem;line-height:1.7;font-size:14px;color:var(--text);border-color:var(--border2);">
       {{ stone.home_content|safe }}
@@ -32,12 +32,12 @@
 
   {% if stone_done %}
     <div class="stone-done-banner" style="margin-bottom:1.25rem;">
-      ✅ Steen volledig ontcijferd!
-      <div style="font-size:11px;opacity:.6;margin-top:3px;">Nieuwe stenen kunnen nu ontgrendeld zijn.</div>
+      ✅ Stone fully deciphered!
+      <div style="font-size:11px;opacity:.6;margin-top:3px;">New stones may now be unlocked.</div>
     </div>
   {% endif %}
 
-  {# Sublevel kaarten — zonder inhoud, klikbaar naar aparte pagina #}
+  {# Sublevel cards — clickable to separate page #}
   <div style="display:flex;flex-direction:column;gap:.75rem;">
     {% for ch in challenges %}
       {% set is_solved = ch.id in solved %}
@@ -57,14 +57,14 @@
               <span>
                 {% if ch.is_final %}
                   <span style="color:var(--yellow)">★ NAME+CITY</span>
-                  {% if locked %}<span style="color:var(--red)"> — los eerst andere sublevels op</span>{% endif %}
+                  {% if locked %}<span style="color:var(--red)"> — solve other sublevels first</span>{% endif %}
                 {% else %}
                   SINGLE
                 {% endif %}
               </span>
               <span style="color:var(--blue)">+{{ ch.points }} pts</span>
               {% if meta.attempts > 0 %}
-                <span>{{ meta.attempts }} poging{% if meta.attempts != 1 %}en{% endif %}</span>
+                <span>{{ meta.attempts }} attempt{% if meta.attempts != 1 %}s{% endif %}</span>
               {% endif %}
             </div>
           </div>
@@ -73,7 +73,7 @@
         {% if not locked %}
           <a href="{{ url_for('challenge_view', slug=ch.slug) }}"
              class="btn btn-secondary btn-sm" style="flex-shrink:0;">
-            {% if is_solved %}Bekijk{% else %}Oplossen →{% endif %}
+            {% if is_solved %}View{% else %}Solve →{% endif %}
           </a>
         {% endif %}
       </div>
@@ -81,7 +81,7 @@
   </div>
 
   <div class="mt3">
-    <a href="{{ url_for('pyramid') }}" class="btn btn-secondary btn-sm">← Terug naar piramide</a>
+    <a href="{{ url_for('greeks') }}" class="btn btn-secondary btn-sm">← Back to Greeks</a>
   </div>
 </div>
 {% endblock %}

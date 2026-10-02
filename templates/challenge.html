@@ -3,7 +3,7 @@
 {% block body %}
 <div class="page-sm">
   <div class="bc">
-    <a href="{{ url_for('pyramid') }}">Piramide</a> &nbsp;/&nbsp;
+    <a href="{{ url_for('greeks') }}">Greeks</a> &nbsp;/&nbsp;
     <a href="{{ url_for('stone_view', stone_id=stone.id) }}">{{ stone.name }} · {{ stone.label }}</a>
     &nbsp;/&nbsp;
     <span>{{ challenge.title or challenge.slug }}</span>
@@ -22,70 +22,70 @@
         {% endif %}
         <span style="color:var(--blue)">+{{ challenge.points }} pts</span>
         {% if attempts > 0 %}
-          <span style="color:var(--dim)">{{ attempts }} poging{% if attempts != 1 %}en{% endif %}</span>
+          <span style="color:var(--dim)">{{ attempts }} attempt{% if attempts != 1 %}s{% endif %}</span>
         {% endif %}
       </div>
     </div>
     {% if is_solved %}
-      <span style="color:var(--green);font-family:var(--mono);font-size:13px;">✅ OPGELOST</span>
+      <span style="color:var(--green);font-family:var(--mono);font-size:13px;">✅ SOLVED</span>
     {% endif %}
   </div>
 
-  {# Challenge inhoud uit challenges/<slug>.html #}
+  {# Challenge content from challenges/<slug>.html #}
   <div class="card" style="margin-bottom:1.25rem;border-color:var(--border2);">
     <div class="ch-content">
       {{ content }}
     </div>
   </div>
 
-  {# Antwoord sectie #}
+  {# Answer section #}
   <div class="card" id="answer-card">
     {% if final_locked %}
       <div style="font-family:var(--mono);font-size:13px;color:var(--yellow);text-align:center;padding:.5rem;">
-        🔒 Los eerst alle andere sublevels van deze steen op.
+        🔒 Solve all other sublevels of this stone first.
       </div>
 
     {% elif is_solved %}
       <div class="solved-badge" style="text-align:center;padding:.5rem;">
-        ✅ Dit sublevel is opgelost!
+        ✅ This sublevel is solved!
         <div style="font-size:12px;color:var(--text-dim);margin-top:.25rem;">
-          <a href="{{ url_for('stone_view', stone_id=stone.id) }}">Terug naar {{ stone.label }}</a>
+          <a href="{{ url_for('stone_view', stone_id=stone.id) }}">Back to {{ stone.label }}</a>
         </div>
       </div>
 
     {% elif challenge.is_final %}
-      <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:1rem;">ANTWOORD</div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:1rem;">ANSWER</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;" id="final-grid">
         <div>
-          <div class="answer-label">Naam</div>
+          <div class="answer-label">Name</div>
           <input class="answer-input" id="inp-name" type="text"
-                 placeholder="Naam..." autocomplete="off"/>
+                 placeholder="Name..." autocomplete="off"/>
           <div class="field-fb" id="fb-name"></div>
         </div>
         <div>
-          <div class="answer-label">Stad</div>
+          <div class="answer-label">City</div>
           <input class="answer-input" id="inp-city" type="text"
-                 placeholder="Stad..." autocomplete="off"/>
+                 placeholder="City..." autocomplete="off"/>
           <div class="field-fb" id="fb-city"></div>
         </div>
       </div>
       <div class="mt2" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
-        <button class="check-btn" id="check-btn" onclick="checkFinal()">Controleer</button>
+        <button class="check-btn" id="check-btn" onclick="checkFinal()">Check</button>
         <div id="global-fb" style="font-family:var(--mono);font-size:13px;"></div>
       </div>
 
     {% else %}
-      <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:.75rem;">ANTWOORD</div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:.75rem;">ANSWER</div>
       <div style="display:flex;gap:.5rem;">
         <input class="answer-input" id="inp-1" type="text"
-               placeholder="Jouw antwoord..." autocomplete="off"/>
-        <button class="check-btn" id="check-btn" onclick="checkSingle()">Controleer</button>
+               placeholder="Your answer..." autocomplete="off"/>
+        <button class="check-btn" id="check-btn" onclick="checkSingle()">Check</button>
       </div>
       <div class="field-fb mt1" id="fb-1"></div>
     {% endif %}
   </div>
 
-  {# Navigatie vorige/volgende #}
+  {# Previous/next navigation #}
   <div style="display:flex;justify-content:space-between;margin-top:1.25rem;gap:.5rem;">
     <div>
       {% if prev_ch %}
@@ -132,9 +132,9 @@ function applyField(inputEl, fbEl, result) {
 function showCorrect(points) {
   document.getElementById('answer-card').innerHTML =
     `<div class="solved-badge" style="text-align:center;padding:.5rem;">
-       ✅ Correct! <span style="color:var(--blue)">+${points} punten</span>
+       ✅ Correct! <span style="color:var(--blue)">+${points} points</span>
        <div style="font-size:12px;color:var(--text-dim);margin-top:.25rem;">
-         <a href="{{ url_for('stone_view', stone_id=stone.id) }}">Terug naar {{ stone.label }}</a>
+         <a href="{{ url_for('stone_view', stone_id=stone.id) }}">Back to {{ stone.label }}</a>
        </div>
      </div>`;
 }
@@ -155,7 +155,7 @@ async function checkSingle() {
       inp.focus();
     }
   } catch(e) {
-    fb.textContent = 'Verbindingsfout.'; fb.className = 'field-fb wrong';
+    fb.textContent = 'Connection error.'; fb.className = 'field-fb wrong';
     btn.disabled = false;
   }
 }
@@ -184,7 +184,7 @@ async function checkFinal() {
       else inpCity.focus();
     }
   } catch(e) {
-    fbName.textContent = 'Verbindingsfout.'; fbName.className = 'field-fb wrong';
+    fbName.textContent = 'Connection error.'; fbName.className = 'field-fb wrong';
     btn.disabled = false;
   }
 }

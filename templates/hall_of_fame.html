@@ -10,11 +10,11 @@
       <div style="font-family:var(--mono);font-size:24px;color:var(--blue);">{{ total_ch }}</div>
     </div>
     <div class="card" style="text-align:center;">
-      <div style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">STENEN</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">STONES</div>
       <div style="font-family:var(--mono);font-size:24px;color:var(--green);">{{ total_stones }}</div>
     </div>
     <div class="card" style="text-align:center;">
-      <div style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">MAX PUNTEN</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:2px;margin-bottom:.5rem;">MAX POINTS</div>
       <div style="font-family:var(--mono);font-size:24px;color:var(--yellow);">{{ total_pts }}</div>
     </div>
   </div>
@@ -24,11 +24,11 @@
       <table class="tbl">
         <thead><tr>
           <th style="width:48px;">#</th>
-          <th>Speler</th>
-          <th style="text-align:right;">Punten</th>
+          <th>Player</th>
+          <th style="text-align:right;">Points</th>
           <th style="text-align:right;">Sublevels</th>
-          <th style="text-align:right;">Stenen</th>
-          <th style="text-align:right;">Pogingen</th>
+          <th style="text-align:right;">Stones</th>
+          <th style="text-align:right;">Attempts</th>
         </tr></thead>
         <tbody>
         {% for r in ranking %}
@@ -45,7 +45,7 @@
               <span style="font-family:var(--mono);font-size:14px;color:{% if r.username == session.username %}var(--blue){% else %}var(--text){% endif %};">
                 {{ r.username }}
                 {% if r.username == session.username %}
-                  <span style="font-size:10px;color:var(--dim);"> (jij)</span>
+                  <span style="font-size:10px;color:var(--dim);"> (you)</span>
                 {% endif %}
               </span>
             </td>
@@ -71,7 +71,7 @@
     </div>
   {% else %}
     <div class="card" style="text-align:center;padding:3rem;color:var(--text-dim);font-family:var(--mono);">
-      Nog niemand op de ranglijst. Wees de eerste!
+      No one on the leaderboard yet. Be the first!
     </div>
   {% endif %}
 </div>

@@ -1,8 +1,8 @@
 # Konundrum 🔐
 
-Cryptografie-piramide challenge website — Flask + SQLite.
+Cryptography pyramid challenge website — Flask + SQLite.
 
-## Snelle start
+## Quick start
 
 ```bash
 pip install -r requirements.txt
@@ -11,92 +11,102 @@ python app.py
 
 Open **http://localhost:5000**
 
-Database en voorbeelddata worden automatisch aangemaakt.
+Database and sample data are created automatically.
 
 ---
 
-## Standaard login
+## Default login
 
-| Rol   | Username | Wachtwoord |
-|-------|----------|------------|
-| Admin | admin    | admin123   |
+| Role  | Username | Password |
+|-------|----------|----------|
+| Admin | admin    | admin123 |
 
 ---
 
-## Piramide werking
+## Pyramid mechanics
 
-De piramide wordt **automatisch opgebouwd** op basis van de `row` en `col` waarden in de database.
+The pyramid is **automatically built** based on the `row` and `col` values in the database.
 
 ```
-rij 3 (top):        [ S10 ]
-rij 2:          [ S8 ]    [ S9 ]
-rij 1:      [ S5 ]  [ S6 ]  [ S7 ]
-rij 0:  [ S1 ] [ S2 ] [ S3 ] [ S4 ]
+row 3 (top):        [ S10 ]
+row 2:          [ S8 ]    [ S9 ]
+row 1:      [ S5 ]  [ S6 ]  [ S7 ]
+row 0:  [ S1 ] [ S2 ] [ S3 ] [ S4 ]
 ```
 
-**Nieuwe steen toevoegen = piramide groeit automatisch.**
-Stel gewoon `row` en `col` in, de rest regelt de app.
+**Adding a new stone = pyramid grows automatically.**
+Just set `row` and `col`, the app handles the rest.
 
 ---
 
 ## Sublevel types
 
-| Type        | Antwoordvelden     | Badge       |
+| Type        | Answer fields      | Badge       |
 |-------------|--------------------|-------------|
-| SINGLE      | 1 veld (antwoord)  | blauw       |
-| NAME + CITY | 2 velden           | geel ★      |
+| SINGLE      | 1 field (answer)   | blue        |
+| NAME + CITY | 2 fields           | yellow ★    |
 
-**Aanbeveling:** maak het laatste sublevel van elke steen altijd NAME+CITY.
+**Recommendation:** make the last sublevel of each stone always NAME+CITY.
 
 ---
 
-## Vraagbestanden
+## Challenge files
 
-Elke challenge heeft een HTML-bestand in de `challenges/` map:
+Each challenge has an HTML file in the `challenges/` folder:
 
 ```
 challenges/
-  s1_c1.html   ← vraag voor sublevel s1_c1
+  s1_c1.html   ← question for sublevel s1_c1
   s1_c2.html
   s2_c1.html
   ...
 ```
 
-**Wat je kunt toevoegen:**
-- Tekst / HTML
-- Afbeeldingen: `<img src="/static/images/foto.jpg">`
-- Inline JavaScript / Canvas animaties
+**What you can add:**
+- Text / HTML
+- Images: `<img src="/static/images/photo.jpg">`
+- Inline JavaScript / Canvas animations
 
-**Wat je NOOIT in een challenge-bestand zet:** antwoorden.
-Die staan veilig in de database en komen nooit in de browser.
+**What you NEVER put in a challenge file:** answers.
+Those are safely stored in the database and never reach the browser.
 
-Bestanden worden automatisch aangemaakt via Admin → Sublevel toevoegen.
+Files are automatically created via Admin → Add sublevel.
 
 ---
 
 ## Hints
 
-Elke challenge heeft een `hint_threshold` (standaard 60%):
-- Antwoord ≥ 60% gelijkenis → "Bijna! [hint tekst]"
-- Antwoord < 60% → "Niet correct."
-- 0% = hints uitgeschakeld
+Each challenge can have multiple **trigger hints**:
+- In Admin → Sublevel → Hints you can link specific wrong answers to hints
+- When a player enters exactly that trigger answer (case-insensitive), they see the hint
+- Example: trigger "caesar" → hint "Think of an older cipher than Caesar..."
+- You can set multiple triggers per challenge, each with their own hint text
+- No match = simply "Incorrect."
 
 ---
 
-## Veiligheid
+## Password reset
 
-- Antwoorden zitten **alleen in de database**
-- `get_challenges_safe()` geeft templates **nooit** antwoord-velden
-- `/api/check` controleert server-side, stuurt enkel `correct/hint/wrong` terug
-- Slug-validatie voorkomt path traversal (`[a-zA-Z0-9_-]` only)
-- Challenge HTML-bestanden worden server-side geladen (geen client-side file paths)
+- Login page has a "Forgot password?" link
+- User enters email address → receives a reset link (valid for 1 hour)
+- Without MAIL_SERVER config the link is logged to console (same as confirmation email)
 
 ---
 
-## Productie
+## Security
+
+- Answers are **only in the database**
+- `get_challenges_safe()` never gives templates answer fields
+- `/api/check` checks server-side, only sends `correct/hint/wrong` back
+- Slug validation prevents path traversal (`[a-zA-Z0-9_-]` only)
+- Challenge HTML files are loaded server-side (no client-side file paths)
+
+---
+
+## Production
 
 ```bash
-export SECRET_KEY="lang-willekeurig-geheim"
+export SECRET_KEY="long-random-secret"
 pip install gunicorn
 gunicorn -w 4 app:app
 ```

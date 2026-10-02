@@ -8,15 +8,15 @@
   </div>
   <div class="flex-between" style="margin-bottom:1.5rem;">
     <div class="page-title">// SUBLEVELS — {{ stone.label }}</div>
-    <a href="{{ url_for('admin_add_challenge', stone_id=stone.id) }}" class="btn btn-primary btn-sm">+ Sublevel toevoegen</a>
+    <a href="{{ url_for('admin_add_challenge', stone_id=stone.id) }}" class="btn btn-primary btn-sm">+ Add sublevel</a>
   </div>
 
   {% if challenges %}
     <div class="card" style="padding:0;overflow:hidden;">
       <table class="tbl">
         <thead><tr>
-          <th>#</th><th>Slug / bestand</th><th>Type</th>
-          <th>Antwoord</th><th>Hint drempel</th><th>Acties</th>
+          <th>#</th><th>Slug / file</th><th>Type</th>
+          <th>Answer</th><th>Hints</th><th>Actions</th>
         </tr></thead>
         <tbody>
         {% for ch in challenges %}
@@ -39,15 +39,18 @@
                 {{ ch.answer_1 }}
               {% endif %}
             </td>
-            <td style="font-family:var(--mono);font-size:12px;color:var(--text-dim)">
-              {{ "%.0f%%"|format(ch.hint_threshold * 100) }}
+            <td style="font-family:var(--mono);font-size:12px;">
+              <a href="{{ url_for('admin_challenge_hints', challenge_id=ch.id) }}"
+                 class="btn btn-secondary btn-sm">💡 Hints</a>
             </td>
             <td>
               <div class="act">
+                <a href="{{ url_for('admin_challenge_answers', challenge_id=ch.id) }}"
+                   class="btn btn-secondary btn-sm">📝 Answers</a>
                 <a href="{{ url_for('admin_edit_challenge', challenge_id=ch.id) }}"
-                   class="btn btn-secondary btn-sm">Bewerk</a>
+                   class="btn btn-secondary btn-sm">Edit</a>
                 <form method="POST" action="{{ url_for('admin_delete_challenge', challenge_id=ch.id) }}"
-                      onsubmit="return confirm('Sublevel verwijderen?');" style="margin:0">
+                      onsubmit="return confirm('Delete sublevel?');" style="margin:0">
                   <button type="submit" class="btn btn-danger btn-sm">✕</button>
                 </form>
               </div>
@@ -59,23 +62,24 @@
     </div>
 
     <div class="card mt2" style="font-family:var(--mono);font-size:12px;color:var(--dim);line-height:1.8;">
-      <strong style="color:var(--text-dim)">Vraagbestanden</strong> staan in
-      <code style="color:var(--blue)">challenges/</code> map naast app.py.<br>
-      ★ = Finaal sublevel: antwoord bestaat uit naam + stad (2 velden).<br>
-      Aanbeveling: maak het laatste sublevel van elke steen finaal.
+      <strong style="color:var(--text-dim)">Challenge files</strong> are in the
+      <code style="color:var(--blue)">challenges/</code> folder next to app.py.<br>
+      ★ = Final sublevel: answer consists of name + city (2 fields).<br>
+      Recommendation: make the last sublevel of each stone final.<br>
+      💡 = Click "Hints" to set up trigger answers that show specific hints.
     </div>
   {% else %}
     <div class="card" style="text-align:center;padding:2.5rem;color:var(--text-dim);font-family:var(--mono);">
-      Nog geen sublevels.
+      No sublevels yet.
       <div class="mt2">
         <a href="{{ url_for('admin_add_challenge', stone_id=stone.id) }}"
-           class="btn btn-primary btn-sm">Eerste sublevel toevoegen</a>
+           class="btn btn-primary btn-sm">Add first sublevel</a>
       </div>
     </div>
   {% endif %}
 
   <div class="mt2">
-    <a href="{{ url_for('admin') }}" class="btn btn-secondary btn-sm">← Terug</a>
+    <a href="{{ url_for('admin') }}" class="btn btn-secondary btn-sm">← Back</a>
   </div>
 </div>
 {% endblock %}

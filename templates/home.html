@@ -2,23 +2,23 @@
 {% block title %}Home — Konundrum{% endblock %}
 {% block body %}
 <div class="page" style="max-width:760px;">
-  <div class="page-title">// WELKOM</div>
+  <div class="page-title">// WELCOME</div>
 
   <div class="card" style="line-height:1.8;font-size:15px;color:var(--text);">
     {% if content %}
       {{ content }}
     {% else %}
       <p style="color:var(--text-dim);font-family:var(--mono);">
-        Nog geen inhoud. Log in als admin en ga naar Admin → Homepagina.
+        No content yet. Log in as admin and go to Admin → Homepage.
       </p>
     {% endif %}
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-top:1.5rem;">
-    <a href="{{ url_for('pyramid') }}" class="card" style="text-decoration:none;text-align:center;padding:1.5rem;transition:border-color .2s;border-color:var(--border);" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+    <a href="{{ url_for('greeks') }}" class="card" style="text-decoration:none;text-align:center;padding:1.5rem;transition:border-color .2s;border-color:var(--border);" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="font-size:28px;margin-bottom:.5rem;">🔺</div>
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--green);">PIRAMIDE</div>
-      <div style="font-size:13px;color:var(--text-dim);margin-top:.25rem;">Alle levels</div>
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--green);">GREEKS</div>
+      <div style="font-size:13px;color:var(--text-dim);margin-top:.25rem;">All levels</div>
     </a>
     <a href="{{ url_for('hall_of_fame') }}" class="card" style="text-decoration:none;text-align:center;padding:1.5rem;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--yellow)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="font-size:28px;margin-bottom:.5rem;">🏆</div>
@@ -27,7 +27,7 @@
     </a>
     <a href="{{ url_for('profile') }}" class="card" style="text-decoration:none;text-align:center;padding:1.5rem;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="font-size:28px;margin-bottom:.5rem;">📊</div>
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--blue);">MIJN STATS</div>
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:2px;color:var(--blue);">MY STATS</div>
       <div style="font-size:13px;color:var(--text-dim);margin-top:.25rem;">{{ score }} / {{ total }} pts</div>
     </a>
   </div>

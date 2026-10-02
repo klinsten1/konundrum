@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}{% if stone %}Steen bewerken{% else %}Nieuwe steen{% endif %} — Konundrum{% endblock %}
+{% block title %}{% if stone %}Edit stone{% else %}New stone{% endif %} — Konundrum{% endblock %}
 {% block body %}
 <div class="page-sm">
   <div class="bc">
     <a href="{{ url_for('admin') }}">Admin</a> &nbsp;/&nbsp;
-    <span>{% if stone %}Bewerken{% else %}Nieuwe steen{% endif %}</span>
+    <span>{% if stone %}Edit{% else %}New stone{% endif %}</span>
   </div>
-  <div class="page-title">// {% if stone %}STEEN BEWERKEN{% else %}NIEUWE STEEN{% endif %}</div>
+  <div class="page-title">// {% if stone %}EDIT STONE{% else %}NEW STONE{% endif %}</div>
 
   {% if error %}<div class="error-box">{{ error }}</div>{% endif %}
 
@@ -14,36 +14,36 @@
     <form method="POST">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
         <div class="field">
-          <label>Naam (unieke ID) *</label>
+          <label>Name (unique ID) *</label>
           <input type="text" name="name" value="{{ stone.name if stone else '' }}" placeholder="S11" required/>
-          <div class="sub">Bijv. S11, BONUS1</div>
+          <div class="sub">E.g. S11, BONUS1</div>
         </div>
         <div class="field">
-          <label>Label (op blok) *</label>
+          <label>Label (on block) *</label>
           <input type="text" name="label" value="{{ stone.label if stone else '' }}" placeholder="CAESAR" required/>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
         <div class="field">
-          <label>Rij *</label>
+          <label>Row *</label>
           <input type="number" name="row" value="{{ stone.row if stone else 0 }}" min="0" required/>
-          <div class="sub">0 = onderste rij. Piramide groeit automatisch.</div>
+          <div class="sub">0 = bottom row. Pyramid grows automatically.</div>
         </div>
         <div class="field">
-          <label>Kolom *</label>
+          <label>Column *</label>
           <input type="number" name="col" value="{{ stone.col if stone else 0 }}" min="0" required/>
-          <div class="sub">Positie binnen de rij (0, 1, 2...)</div>
+          <div class="sub">Position within the row (0, 1, 2...)</div>
         </div>
       </div>
       <div class="field">
-        <label>Afhankelijkheden</label>
+        <label>Dependencies</label>
         <input type="text" name="dependencies"
                value="{{ stone.dependencies if stone else '' }}"
                placeholder="S1,S2"/>
         <div class="sub">
-          Komma-gescheiden namen. Laat leeg = altijd beschikbaar.
+          Comma-separated names. Leave empty = always available.
           {% if all_stones %}
-            Klik om toe te voegen:
+            Click to add:
             {% for s in all_stones %}
               <span style="color:var(--blue);cursor:pointer;text-decoration:underline;"
                     onclick="addDep('{{ s.name }}')">{{ s.name }}</span>{% if not loop.last %}, {% endif %}
@@ -52,15 +52,22 @@
         </div>
       </div>
       <div class="field">
-        <label>Tips / inhoud voor de steen-overzichtspagina</label>
+        <label>Campaign (pyramid)</label>
+        <input type="text" name="campaign"
+               value="{{ stone.campaign if stone and stone.campaign else 'greeks' }}"
+               placeholder="greeks"/>
+        <div class="sub">Which pyramid this stone belongs to. Default: <code>greeks</code>. Use a new key (e.g. <code>romans</code>) to start a follow-up pyramid.</div>
+      </div>
+      <div class="field">
+        <label>Tips / content for the stone overview page</label>
         <textarea name="home_content" rows="5"
-                  placeholder="&lt;p&gt;Hints of uitleg over deze steen...&lt;/p&gt;">{{ stone.home_content if stone else '' }}</textarea>
-        <div class="sub">HTML toegestaan. Wordt getoond boven de sublevel-lijst op de steen-pagina.</div>
+                  placeholder="&lt;p&gt;Hints or explanation for this stone...&lt;/p&gt;">{{ stone.home_content if stone else '' }}</textarea>
+        <div class="sub">HTML allowed. Displayed above the sublevel list on the stone page.</div>
       </div>
       <hr class="div"/>
       <div style="display:flex;gap:.75rem;">
-        <button type="submit" class="btn btn-primary">{{ 'Opslaan' if stone else 'Steen aanmaken' }}</button>
-        <a href="{{ url_for('admin') }}" class="btn btn-secondary">Annuleren</a>
+        <button type="submit" class="btn btn-primary">{{ 'Save' if stone else 'Create stone' }}</button>
+        <a href="{{ url_for('admin') }}" class="btn btn-secondary">Cancel</a>
       </div>
     </form>
   </div>
