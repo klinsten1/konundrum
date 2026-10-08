@@ -1,0 +1,21 @@
+# Database (lokale data, niet in git)
+konundrum.db
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Virtuele omgeving
+.venv/
+venv/
+
+# IDE / editor
+.idea/
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store

@@ -12,8 +12,11 @@
       {% elif code == 400 %}BAD REQUEST
       {% else %}NOT FOUND{% endif %}
     </div>
-    <div style="font-size:14px;color:var(--text-dim);margin-bottom:2rem;line-height:1.7;">
-      {{ msg or "The page you're looking for doesn't exist or has been moved." }}
+    <div style="font-size:14px;color:var(--text-dim);margin-bottom:.75rem;line-height:1.7;">
+      {{ msg or "This trail went cold. The lead you're after doesn't exist or has been moved." }}
+    </div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:2px;margin-bottom:2rem;">
+      // the Greeks covered their tracks
     </div>
     {% if session.user_id %}
       <a href="{{ url_for('home') }}" class="btn btn-secondary">← Back to home</a>

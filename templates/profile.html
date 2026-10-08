@@ -29,6 +29,7 @@
     </div>
     <hr class="div"/>
     <form method="POST" style="display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap;">
+      <input type="hidden" name="action" value="country"/>
       <div class="field" style="flex:1;min-width:200px;margin-bottom:0;">
         <label>Change country</label>
         <select name="country">
@@ -39,6 +40,33 @@
         </select>
       </div>
       <button type="submit" class="btn btn-secondary">Save</button>
+    </form>
+  </div>
+
+  {# Change password #}
+  <div class="card" style="margin-bottom:2rem;">
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:1rem;text-transform:uppercase;">Change password</div>
+    {% if pw_msg %}<div class="success-box">{{ pw_msg }}</div>{% endif %}
+    {% if pw_error %}<div class="error-box">{{ pw_error }}</div>{% endif %}
+    <form method="POST">
+      <input type="hidden" name="action" value="password"/>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+        <div class="field" style="margin-bottom:0;">
+          <label>Current password</label>
+          <input type="password" name="current_password" autocomplete="current-password" required/>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>New password</label>
+          <input type="password" name="new_password" autocomplete="new-password" placeholder="min. 4 characters" required/>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Repeat new password</label>
+          <input type="password" name="new_password2" autocomplete="new-password" required/>
+        </div>
+      </div>
+      <div class="mt2">
+        <button type="submit" class="btn btn-secondary">Update password</button>
+      </div>
     </form>
   </div>
 

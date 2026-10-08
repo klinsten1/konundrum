@@ -11,7 +11,9 @@ import os, re
 import database as db
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "verander-dit-voor-productie")
+# In production, set SECRET_KEY as an environment variable. The fallback is only
+# meant for local development — never rely on it on a public server.
+app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
 
 CHALLENGES_DIR = os.path.join(os.path.dirname(__file__), "challenges")
 HOME_CONTENT   = os.path.join(os.path.dirname(__file__), "templates", "home_content.html")
@@ -340,7 +342,11 @@ def logout():
 @app.route("/home")
 @login_required
 def home():
-    content = Markup(load_file_content(HOME_CONTENT))
+    raw = load_file_content(HOME_CONTENT)
+    # Replace the {{USERNAME}} placeholder with the current user's (escaped) name.
+    from markupsafe import escape
+    raw = raw.replace("{{USERNAME}}", str(escape(session.get("username", ""))))
+    content = Markup(raw)
     score   = db.get_user_total_points(session["user_id"])
     total   = db.total_possible_points()
     return render_template("home.html", content=content, score=score, total=total)
@@ -437,17 +443,36 @@ def hall_of_fame():
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
-    saved = False
+    saved = False          # country saved
+    pw_msg = None          # password change success
+    pw_error = None        # password change error
     if request.method == "POST":
-        country = request.form.get("country","").strip()
-        if country in COUNTRIES or country == "":
-            db.update_user_country(session["user_id"], country)
-            saved = True
+        action = request.form.get("action", "country")
+        if action == "password":
+            current  = request.form.get("current_password", "")
+            new1     = request.form.get("new_password", "")
+            new2     = request.form.get("new_password2", "")
+            user     = db.get_user_by_id(session["user_id"])
+            if not user or not check_password_hash(user["password_hash"], current):
+                pw_error = "Current password is incorrect."
+            elif len(new1) < 4:
+                pw_error = "New password must be at least 4 characters."
+            elif new1 != new2:
+                pw_error = "New passwords do not match."
+            else:
+                db.update_user_password(user["id"], generate_password_hash(new1))
+                pw_msg = "Password updated."
+        else:
+            country = request.form.get("country", "").strip()
+            if country in COUNTRIES or country == "":
+                db.update_user_country(session["user_id"], country)
+                saved = True
     stats    = db.get_user_stats(session["user_id"])
     total_ch = db.count_all_challenges()
     total_pts= db.total_possible_points()
     total_st = len(db.get_all_stones())
     return render_template("profile.html", stats=stats, countries=COUNTRIES, saved=saved,
+                           pw_msg=pw_msg, pw_error=pw_error,
                            total_ch=total_ch, total_pts=total_pts, total_st=total_st)
 
 
@@ -715,15 +740,19 @@ def admin_challenge_hints(challenge_id):
     return render_template("admin_hints.html", stone=s, challenge=ch, hints=hints, msg=msg)
 
 
-# ── entry point ────────────────────────────────────────────────────────────────
+# ── bootstrap ──────────────────────────────────────────────────────────────────
 
-if __name__ == "__main__":
+def bootstrap():
+    """Prepare the database and content files. Safe to call on every start:
+    init/migrate are idempotent, seeding only runs on an empty database, and
+    content/challenge files are only written when missing.
+    Call this from both the dev runner and the WSGI entry point."""
     db.init_db()
     db.migrate_db()
     db.seed_demo_data()
     for slug in db.get_all_slugs():
         ensure_challenge_file(slug)
-    # Starter content files
+    # Starter content files (only written if they don't exist yet)
     for path, content in [
         (HOME_CONTENT, """<h2 style="font-family:var(--mono);color:var(--blue);margin-bottom:1rem;">Welcome to Konundrum</h2>
 <p>Solve the cryptography pyramid from bottom to top.</p>
@@ -743,4 +772,12 @@ if __name__ == "__main__":
         if not os.path.exists(path):
             with open(path, "w", encoding="utf-8") as f:
                 f.write(content)
-    app.run(debug=True)
+
+
+# ── entry point (local development only) ────────────────────────────────────────
+
+if __name__ == "__main__":
+    bootstrap()
+    # Debug is off unless FLASK_DEBUG=1 is set. Never run with debug on a public server.
+    debug = os.environ.get("FLASK_DEBUG", "0") == "1"
+    app.run(debug=debug)
