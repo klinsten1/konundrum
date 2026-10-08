@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dd85d7c6-ad27-4679-96cb-a6dc56822516" name="Changes" comment="v 0.9.2 overhaul">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="dd85d7c6-ad27-4679-96cb-a6dc56822516" name="Changes" comment="v 0.9.3 ready to publish" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -160,7 +158,15 @@
       <option name="project" value="LOCAL" />
       <updated>1790929558112</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="v 0.9.3 ready to publish">
+      <option name="closed" value="true" />
+      <created>1791471179456</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1791471179456</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -171,6 +177,7 @@
     <MESSAGE value="v 0.9" />
     <MESSAGE value="v 0.9.1" />
     <MESSAGE value="v 0.9.2 overhaul" />
-    <option name="LAST_COMMIT_MESSAGE" value="v 0.9.2 overhaul" />
+    <MESSAGE value="v 0.9.3 ready to publish" />
+    <option name="LAST_COMMIT_MESSAGE" value="v 0.9.3 ready to publish" />
   </component>
 </project>
