@@ -38,8 +38,11 @@ unzip konundrum.zip -d konundrum
 You should end up with a folder like `/home/<username>/konundrum` containing
 `app.py`, `database.py`, `wsgi.py`, `templates/`, `challenges/`, etc.
 
-> Do **not** upload `konundrum.db` or your local `.venv` (both are in
-> `.gitignore`). The database is created automatically on first run.
+> Do **not** upload `users.db` or your local `.venv` (both are in `.gitignore`).
+> The databases are created automatically on first run. `content.db` (puzzles)
+> is tracked in git and comes along with the code; `users.db` (player data) stays
+> only on the server. If an old single-file `konundrum.db` is present, it is
+> migrated into the two split files automatically on first run.
 
 ## 3. Create a virtualenv and install dependencies
 
@@ -120,10 +123,12 @@ The app seeds a default admin on first run:
 
 ## Where your data lives
 
-- Database: `konundrum.db` is created in the project folder on first run.
-  PythonAnywhere's disk is persistent, so your data and admin edits survive
-  reloads and restarts. (This is why PythonAnywhere suits this app better than
-  ephemeral "serverless" hosts.)
+- Databases: `content.db` (puzzles — tracked in git) and `users.db` (player data
+  — not in git) are created in the project folder on first run. PythonAnywhere's
+  disk is persistent, so your data and admin edits survive reloads and restarts.
+  (This is why PythonAnywhere suits this app better than ephemeral "serverless"
+  hosts.) See the "Databases & GitHub sync" section in `README.md` for the
+  pull-before-edit / push-after-edit workflow.
 - Content and puzzle files: `templates/home_content.html`,
   `templates/about_content.html`, and `challenges/*.html` are created if missing
   and edited live via the admin pages. They persist too.
@@ -143,11 +148,11 @@ existing data.
 
 ## Backups
 
-To download a copy of your live data, use the **Files** tab to download
-`konundrum.db`, or from a Bash console:
+Your live player data is in `users.db` (not synced to git). Download a copy via
+the **Files** tab, or from a Bash console:
 
 ```bash
-cp ~/konundrum/konundrum.db ~/konundrum_backup_$(date +%F).db
+cp ~/konundrum/users.db ~/users_backup_$(date +%F).db
 ```
 
 ## Troubleshooting

@@ -1,6 +1,14 @@
-# Database (lokale data, niet in git)
+# Databases
+# users.db = live user data (NOT in git — stays per machine)
+# content.db = puzzles/stones/hints (IS tracked, synced via GitHub)
+users.db
 konundrum.db
-*.db
+konundrum.db.migrated-backup
+*.db-journal
+*.db-wal
+*.db-shm
+# Keep content.db tracked despite the patterns above:
+!content.db
 
 # Python
 __pycache__/

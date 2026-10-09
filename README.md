@@ -11,7 +11,7 @@ python app.py
 
 Open **http://localhost:5000**
 
-Database and sample data are created automatically.
+The databases and sample data are created automatically on first run.
 
 ---
 
@@ -20,6 +20,57 @@ Database and sample data are created automatically.
 | Role  | Username | Password |
 |-------|----------|----------|
 | Admin | admin    | admin123 |
+
+> Change the admin password immediately on any public server: log in → **Stats**
+> → **Change password**.
+
+---
+
+## Databases & GitHub sync
+
+The data is split across **two SQLite files** so puzzles can be version-controlled
+while user data stays private:
+
+| File         | Contains                                                        | In git? |
+|--------------|-----------------------------------------------------------------|---------|
+| `content.db` | Puzzle design: stones, challenges, trigger hints                | **Yes** |
+| `users.db`   | Players, attempts, progress, history, answer log, resets        | **No**  |
+
+`.gitignore` keeps `users.db` out of git and lets `content.db` in. Both files are
+created automatically; if an old single-file `konundrum.db` is present it is
+migrated into the two new files on first run (the old file is renamed to
+`konundrum.db.migrated-backup`).
+
+### Why two files
+
+`content.db` is a binary SQLite file, but it only changes when **you** edit
+puzzles, so syncing it through GitHub is practical. `users.db` changes constantly
+as players use the site, so it is never committed — it lives independently on your
+laptop and on the server.
+
+### Workflow (important)
+
+Because `content.db` is binary, git **cannot merge it**. So only edit puzzle
+content in **one place at a time**, and always sync through GitHub:
+
+1. **Before** you change anything (on laptop *or* on the server): `git pull`
+2. Make your puzzle changes (admin UI, or editing stones/challenges).
+3. **After** your change: commit and push.
+
+```bash
+# after editing puzzles
+git add content.db challenges/ templates/home_content.html templates/about_content.html
+git commit -m "Update puzzles"
+git push
+```
+
+Then on the other machine, `git pull` and reload. Never edit puzzles on the laptop
+and the server at the same time without pulling first — otherwise one side's
+`content.db` wins and the other's edits are lost.
+
+> User data (`users.db`) is deliberately **not** synced. Players on the live
+> server stay on the server; your local runs have their own test users. Back up
+> the live `users.db` separately (download it from the PythonAnywhere Files tab).
 
 ---
 

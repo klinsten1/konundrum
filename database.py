@@ -1,38 +1,46 @@
 """
-database.py — pure sqlite3
+database.py — pure sqlite3, split across TWO database files
 
-Features:
-  - users.email + country (no email confirmation)
-  - attempts per sublevel visible to admin
-  - admin_stats() for overview page
-  - challenge_hints for trigger-based hints
-  - password_resets for token-based password recovery
+  content.db  — the puzzle "design": stones, challenges, challenge_hints.
+                This file IS tracked in git, so you can sync puzzles between
+                your laptop and the server through GitHub.
+
+  users.db    — live user data: users, attempts, progress, history, answer log,
+                password resets. This file is NOT tracked in git (it stays only
+                on the machine where it lives).
+
+Both files are opened on a single connection: users.db is the main database and
+content.db is ATTACHed as `content`. Table names are unique across the two files,
+so ordinary unqualified SQL (e.g. SELECT * FROM stones) resolves to the right
+file automatically, and queries can still join user tables with content tables.
 """
 import sqlite3, os, secrets
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "konundrum.db")
+BASE_DIR         = os.path.dirname(__file__)
+USERS_DB_PATH    = os.path.join(BASE_DIR, "users.db")
+CONTENT_DB_PATH  = os.path.join(BASE_DIR, "content.db")
+
+# Legacy single-file database. If present (and the split files are not yet
+# created), its data is migrated into the two new files on first run.
+LEGACY_DB_PATH   = os.path.join(BASE_DIR, "konundrum.db")
 
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
+    """Open users.db as main and ATTACH content.db as `content`.
+
+    Cross-file foreign keys cannot be enforced by SQLite anyway, so we do not
+    enable PRAGMA foreign_keys — relational integrity is handled in app logic.
+    """
+    conn = sqlite3.connect(USERS_DB_PATH)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("ATTACH DATABASE ? AS content", (CONTENT_DB_PATH,))
     return conn
 
 
-def init_db():
-    conn = get_db()
+def _init_content(conn):
+    """Create the puzzle/content tables in content.db (schema `content`)."""
     conn.executescript("""
-        CREATE TABLE IF NOT EXISTS users (
-            id               INTEGER PRIMARY KEY AUTOINCREMENT,
-            username         TEXT UNIQUE NOT NULL,
-            email            TEXT UNIQUE NOT NULL DEFAULT '',
-            password_hash    TEXT NOT NULL,
-            is_admin         INTEGER DEFAULT 0,
-            country          TEXT DEFAULT '',
-            created_at       TEXT DEFAULT (datetime('now'))
-        );
-        CREATE TABLE IF NOT EXISTS stones (
+        CREATE TABLE IF NOT EXISTS content.stones (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             name         TEXT UNIQUE NOT NULL,
             label        TEXT NOT NULL,
@@ -42,9 +50,9 @@ def init_db():
             home_content TEXT DEFAULT '',
             campaign     TEXT DEFAULT 'greeks'
         );
-        CREATE TABLE IF NOT EXISTS challenges (
+        CREATE TABLE IF NOT EXISTS content.challenges (
             id             INTEGER PRIMARY KEY AUTOINCREMENT,
-            stone_id       INTEGER NOT NULL REFERENCES stones(id),
+            stone_id       INTEGER NOT NULL,
             ord            INTEGER DEFAULT 0,
             slug           TEXT NOT NULL UNIQUE,
             title          TEXT DEFAULT '',
@@ -58,11 +66,33 @@ def init_db():
             hint_city      TEXT DEFAULT '',
             hint_threshold REAL DEFAULT 0.6
         );
+        CREATE TABLE IF NOT EXISTS content.challenge_hints (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            challenge_id INTEGER NOT NULL,
+            field        TEXT NOT NULL DEFAULT 'answer_1',
+            trigger_answer TEXT NOT NULL,
+            hint_text    TEXT NOT NULL
+        );
+    """)
+
+
+def _init_users(conn):
+    """Create the user/progress tables in users.db (main schema)."""
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS users (
+            id               INTEGER PRIMARY KEY AUTOINCREMENT,
+            username         TEXT UNIQUE NOT NULL,
+            email            TEXT UNIQUE NOT NULL DEFAULT '',
+            password_hash    TEXT NOT NULL,
+            is_admin         INTEGER DEFAULT 0,
+            country          TEXT DEFAULT '',
+            created_at       TEXT DEFAULT (datetime('now'))
+        );
         CREATE TABLE IF NOT EXISTS user_attempts (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id       INTEGER NOT NULL REFERENCES users(id),
-            challenge_id  INTEGER NOT NULL REFERENCES challenges(id),
-            stone_id      INTEGER NOT NULL REFERENCES stones(id),
+            user_id       INTEGER NOT NULL,
+            challenge_id  INTEGER NOT NULL,
+            stone_id      INTEGER NOT NULL,
             attempts      INTEGER DEFAULT 0,
             solved        INTEGER DEFAULT 0,
             points_earned INTEGER DEFAULT 0,
@@ -71,31 +101,24 @@ def init_db():
         );
         CREATE TABLE IF NOT EXISTS user_stones (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id      INTEGER NOT NULL REFERENCES users(id),
-            stone_id     INTEGER NOT NULL REFERENCES stones(id),
+            user_id      INTEGER NOT NULL,
+            stone_id     INTEGER NOT NULL,
             completed_at TEXT DEFAULT (datetime('now')),
             UNIQUE(user_id, stone_id)
         );
         CREATE TABLE IF NOT EXISTS solve_history (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id      INTEGER NOT NULL REFERENCES users(id),
-            challenge_id INTEGER REFERENCES challenges(id),
-            stone_id     INTEGER REFERENCES stones(id),
+            user_id      INTEGER NOT NULL,
+            challenge_id INTEGER,
+            stone_id     INTEGER,
             event_type   TEXT NOT NULL,
             label        TEXT DEFAULT '',
             points       INTEGER DEFAULT 0,
             happened_at  TEXT DEFAULT (datetime('now'))
         );
-        CREATE TABLE IF NOT EXISTS challenge_hints (
-            id           INTEGER PRIMARY KEY AUTOINCREMENT,
-            challenge_id INTEGER NOT NULL REFERENCES challenges(id),
-            field        TEXT NOT NULL DEFAULT 'answer_1',
-            trigger_answer TEXT NOT NULL,
-            hint_text    TEXT NOT NULL
-        );
         CREATE TABLE IF NOT EXISTS password_resets (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id    INTEGER NOT NULL REFERENCES users(id),
+            user_id    INTEGER NOT NULL,
             token      TEXT NOT NULL UNIQUE,
             created_at TEXT DEFAULT (datetime('now')),
             used       INTEGER DEFAULT 0
@@ -103,21 +126,30 @@ def init_db():
         -- Full log of every answer a user submits per puzzle (for later analysis).
         CREATE TABLE IF NOT EXISTS answer_log (
             id              INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id         INTEGER NOT NULL REFERENCES users(id),
-            challenge_id    INTEGER NOT NULL REFERENCES challenges(id),
-            stone_id        INTEGER REFERENCES stones(id),
+            user_id         INTEGER NOT NULL,
+            challenge_id    INTEGER NOT NULL,
+            stone_id        INTEGER,
             field           TEXT NOT NULL DEFAULT 'answer_1',
             submitted_answer TEXT NOT NULL DEFAULT '',
             is_correct      INTEGER NOT NULL DEFAULT 0,
             created_at      TEXT DEFAULT (datetime('now'))
         );
     """)
-    conn.commit()
-    conn.close()
+
+
+def init_db():
+    _split_legacy_db_if_needed()
+    conn = get_db()
+    try:
+        _init_content(conn)
+        _init_users(conn)
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def migrate_db():
-    """Safe migrations — add missing columns to existing DB."""
+    """Safe migrations — add missing columns to existing split databases."""
     conn = get_db()
     try:
         def add_col(table, col, typedef):
@@ -125,45 +157,75 @@ def migrate_db():
             if col not in cols:
                 conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typedef}")
 
-        add_col("users", "email",            "TEXT NOT NULL DEFAULT ''")
-        add_col("users", "country",          "TEXT DEFAULT ''")
-        add_col("stones","home_content",     "TEXT DEFAULT ''")
-        add_col("stones","campaign",         "TEXT DEFAULT 'greeks'")
-        add_col("challenges","title",        "TEXT DEFAULT ''")
-        add_col("challenges","points",       "INTEGER DEFAULT 10")
+        # content.* columns (PRAGMA table_info resolves attached tables by name)
+        add_col("stones",     "home_content", "TEXT DEFAULT ''")
+        add_col("stones",     "campaign",     "TEXT DEFAULT 'greeks'")
+        add_col("challenges", "title",        "TEXT DEFAULT ''")
+        add_col("challenges", "points",       "INTEGER DEFAULT 10")
+        # users.* columns
+        add_col("users",      "email",        "TEXT NOT NULL DEFAULT ''")
+        add_col("users",      "country",      "TEXT DEFAULT ''")
 
-        # New tables for hints, password reset and the answer log
-        conn.executescript("""
-            CREATE TABLE IF NOT EXISTS challenge_hints (
-                id           INTEGER PRIMARY KEY AUTOINCREMENT,
-                challenge_id INTEGER NOT NULL REFERENCES challenges(id),
-                field        TEXT NOT NULL DEFAULT 'answer_1',
-                trigger_answer TEXT NOT NULL,
-                hint_text    TEXT NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS password_resets (
-                id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id    INTEGER NOT NULL REFERENCES users(id),
-                token      TEXT NOT NULL UNIQUE,
-                created_at TEXT DEFAULT (datetime('now')),
-                used       INTEGER DEFAULT 0
-            );
-            CREATE TABLE IF NOT EXISTS answer_log (
-                id              INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id         INTEGER NOT NULL REFERENCES users(id),
-                challenge_id    INTEGER NOT NULL REFERENCES challenges(id),
-                stone_id        INTEGER REFERENCES stones(id),
-                field           TEXT NOT NULL DEFAULT 'answer_1',
-                submitted_answer TEXT NOT NULL DEFAULT '',
-                is_correct      INTEGER NOT NULL DEFAULT 0,
-                created_at      TEXT DEFAULT (datetime('now'))
-            );
-        """)
         # Make sure existing stones have a campaign set
         conn.execute("UPDATE stones SET campaign='greeks' WHERE campaign IS NULL OR campaign=''")
         conn.commit()
     finally:
         conn.close()
+
+
+def _split_legacy_db_if_needed():
+    """One-time migration: if an old single-file konundrum.db exists but the new
+    split files don't, copy its data into content.db and users.db. Idempotent:
+    does nothing once the split files are present."""
+    if not os.path.exists(LEGACY_DB_PATH):
+        return
+    if os.path.exists(USERS_DB_PATH) or os.path.exists(CONTENT_DB_PATH):
+        return  # already split (or fresh install) — leave the legacy file alone
+
+    legacy = sqlite3.connect(LEGACY_DB_PATH)
+    legacy.row_factory = sqlite3.Row
+
+    def existing_tables(conn):
+        return {r[0] for r in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
+    tables = existing_tables(legacy)
+
+    # Create the fresh split databases with the current schema.
+    conn = get_db()
+    try:
+        _init_content(conn)
+        _init_users(conn)
+        conn.commit()
+
+        content_tables = ["stones", "challenges", "challenge_hints"]
+        user_tables    = ["users", "user_attempts", "user_stones",
+                          "solve_history", "password_resets", "answer_log"]
+
+        def copy_table(name):
+            if name not in tables:
+                return
+            rows = legacy.execute(f"SELECT * FROM {name}").fetchall()
+            if not rows:
+                return
+            cols = rows[0].keys()
+            placeholders = ",".join("?" for _ in cols)
+            collist = ",".join(cols)
+            conn.executemany(
+                f"INSERT INTO {name} ({collist}) VALUES ({placeholders})",
+                [tuple(r[c] for c in cols) for r in rows])
+
+        for t in content_tables + user_tables:
+            copy_table(t)
+        conn.commit()
+    finally:
+        conn.close()
+        legacy.close()
+
+    # Keep the legacy file as a backup, renamed, so nothing is lost.
+    try:
+        os.rename(LEGACY_DB_PATH, LEGACY_DB_PATH + ".migrated-backup")
+    except OSError:
+        pass
 
 
 # ── users ──────────────────────────────────────────────────────────────────────
